@@ -66,7 +66,7 @@ Use `SMTP_SECURE=true` for port 465. SMTP STARTTLS is required on non-local plai
 
 ## Discord overview
 
-**Settings → Discord overview** maintains one live Discord message with a compact entry per service: a status symbol, response time or exception status, and the percentage of observed checks that passed in the past 24 hours. Detailed history and coverage remain on the dashboard, linked from the message title. It refreshes every 60 seconds through the existing worker. It is enabled by default and uses the incident webhook unless a separate encrypted webhook is saved. It is independent of the automatic incident alert switch.
+**Settings → Discord overview** maintains one live Discord message with all services, current status, response time, observed 24-hour check results and coverage, and twelve five-minute history blocks. It refreshes every 60 seconds through the existing worker. It is enabled by default and uses the incident webhook unless a separate encrypted webhook is saved. It is independent of the automatic incident alert switch.
 
 The message ID is saved in PostgreSQL and reused across restarts. A Discord Unknown Message response recreates a deleted post; other errors retain the message ID and honor retry delays. If initial creation may have succeeded but Discord did not confirm it, automatic creation stops to avoid duplicates. Settings then allows entering the existing message ID or explicitly retrying creation. Disabling the overview stops updates and leaves its last message intact. Changing the destination creates a new overview there and leaves the previous message unchanged.
 

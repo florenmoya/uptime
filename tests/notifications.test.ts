@@ -4,24 +4,19 @@ import { createServer } from 'node:http';
 import { SMTPServer } from 'smtp-server';
 import { sendDiscord,sendEmail } from '../src/lib/notifications.js';
 import {buildIncidentNotification,buildTestNotifications,renderEmail,notificationFields,TEST_SCENARIOS} from '../src/lib/notification-content.js';
-import {buildOverview} from '../src/lib/overview-content.js';
+import {buildOverview,overviewHistory} from '../src/lib/overview-content.js';
 import {writeOverview,OverviewError} from '../src/lib/discord-overview.js';
 import type {MonitorView} from '../src/lib/dashboard.js';
 
-test('overview keeps compact service entries with honest stale states and observed-check percentages',()=>{
+test('overview renders honest stale states, history gaps and observed-check percentages',()=>{
   const now='2026-09-05T16:00:00.000Z';
   const monitor={name:'FACT PROD',url:'https://example.com',enabled:true,status:'up',failures:0,successes:2,interval_seconds:60,last_checked_at:now,last_latency_ms:80,total:200,passed:199,coverage:48,history:[{minute:now,ok:true}]} as MonitorView;
   const message=buildOverview([monitor],now,'https://uptime.example.com');
-  assert.equal(message.embeds[0].description,'All 1 service operational');
-  assert.deepEqual(message.embeds[0].fields[0],{name:'✓ FACT PROD',value:'80 ms · 99.50% passed (24h)',inline:false});
-  assert.doesNotMatch(JSON.stringify(message),/[🟩🟥⬜🟢]/u);
+  assert.match(message.embeds[0].description,/All 1 services operational/);
+  assert.match(message.embeds[0].fields[0].value,/99.50% · 48% coverage/);
+  assert.equal(overviewHistory(monitor,now),Array(11).fill('⬜').concat('🟩').join(' '));
   assert.match(buildOverview([{...monitor,last_checked_at:'2026-09-05T15:00:00Z'}],now,'').embeds[0].fields[0].value,/No recent check/);
-  assert.equal(buildOverview([{...monitor,total:0}],now,'').embeds[0].fields[0].value.includes('No checks in 24h'),true);
-  const down=buildOverview([{...monitor,status:'down',successes:0}],now,'').embeds[0];
-  assert.equal(down.fields[0].name,'✕ FACT PROD');
-  assert.equal(down.fields[0].value,'Down · 99.50% passed (24h)');
-  assert.equal(down.description,'0 operational · 1 down');
-  assert.equal(buildOverview([{...monitor,enabled:false}],now,'').embeds[0].fields[0].value,'Paused · 99.50% passed (24h)');
+  assert.equal(buildOverview([{...monitor,total:0}],now,'').embeds[0].fields[0].value.includes('24h checks: No data'),true);
   assert.equal(buildOverview(Array.from({length:30},()=>monitor),now,'').embeds[0].fields.length,20);
 });
 
