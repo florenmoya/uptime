@@ -18,8 +18,8 @@ export function buildIncidentNotification(input:{monitor:Monitor;kind:'down'|'re
   const {monitor,kind,result,occurredAt,startedAt}=input;
   const cause=result.error==='Check timed out.'?'Check timed out after 10 seconds.':result.error==='HTTP 503'?'HTTP 503 — Service unavailable.':result.error??'The target did not respond successfully.';
   return {
-    title:`${input.isTest?'[TEST] ':''}${kind==='down'?'DOWN':'RECOVERED'} — ${monitor.name}`,
-    message:kind==='down'?`${cause}\nConfirmed after 2 consecutive failed checks.`:'Service is responding normally.\nConfirmed after 2 consecutive healthy checks.',
+    title:`${input.isTest?'[TEST] ':''}${kind==='down'?'🔴 DOWN':'✅ RECOVERED'} — ${monitor.name}`,
+    message:kind==='down'?cause:'Service is back online.',
     monitorName:monitor.name,url:monitor.url,project:monitor.project,kind,occurredAt,startedAt,incidentId:input.incidentId,
     isTest:Boolean(input.isTest),durationSeconds:kind==='recovered'?Math.max(0,Math.floor((Date.parse(occurredAt)-Date.parse(startedAt))/1000)):undefined,
     httpStatus:result.httpStatus,latencyMs:result.latencyMs,intervalSeconds:monitor.interval_seconds??60,dashboardUrl:input.dashboardUrl,
@@ -43,19 +43,13 @@ export function buildTestNotifications(monitor:Monitor,scenario:TestScenario|'al
 function time(value:string){return new Intl.DateTimeFormat('en-PH',{dateStyle:'medium',timeStyle:'medium',timeZone:'Asia/Manila'}).format(new Date(value))+' PHT';}
 function duration(seconds:number){const h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return `${h?`${h}h `:''}${m}m ${s}s`;}
 export function notificationFields(payload:NotificationPayload):{name:string;value:string}[]{
-  const fields=[{name:'Monitor',value:payload.monitorName}];
-  if(payload.project)fields.push({name:'Project',value:payload.project});
-  if(payload.url)fields.push({name:'Target',value:payload.url});
+  const fields:{name:string;value:string}[]=[];
+  if(payload.url)fields.push({name:'URL',value:payload.url});
   fields.push({name:'Time',value:time(payload.occurredAt)});
-  if(payload.incidentId)fields.push({name:'Incident',value:`#${payload.incidentId}`});
-  if(payload.kind==='recovered'&&payload.startedAt)fields.push({name:'Incident started',value:time(payload.startedAt)});
-  if(payload.durationSeconds!==undefined)fields.push({name:'Incident duration',value:duration(payload.durationSeconds)});
-  if(payload.httpStatus!=null)fields.push({name:'HTTP status',value:String(payload.httpStatus)});
-  if(payload.latencyMs!==undefined)fields.push({name:payload.httpStatus!=null?'Response time':'Check elapsed',value:`${payload.latencyMs.toLocaleString('en-PH')} ms`});
-  if(payload.intervalSeconds)fields.push({name:'Check interval',value:`${payload.intervalSeconds}s`});
+  if(payload.kind==='recovered'&&payload.durationSeconds!==undefined)fields.push({name:'Downtime',value:duration(payload.durationSeconds)});
   return fields;
 }
-export const testNotice='Test notification. Sample check results; no incident was created.';
+export const testNotice='Test notification';
 export function notificationColor(payload:NotificationPayload){return payload.kind==='down'?'#b3293e':payload.kind==='recovered'?'#17734d':'#365f95';}
 function escapeHtml(value:string){return value.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!));}
 export function renderEmail(payload:NotificationPayload){

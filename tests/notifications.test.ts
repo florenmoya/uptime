@@ -13,16 +13,22 @@ test('incident samples use the real templates, distinguish every supported scena
   assert.equal(new Set(samples.map(p=>p.message)).size,samples.length);
   for(const sample of samples){assert.equal(sample.isTest,true);assert.match(sample.title,/^\[TEST\]/);assert.equal(sample.url,monitor.url);assert.ok(notificationFields(sample).some(f=>f.name==='Time'&&f.value.includes('PHT')));}
   const recovery=samples.find(p=>p.kind==='recovered')!;
-  assert.ok(notificationFields(recovery).some(f=>f.name==='Incident duration'&&f.value==='5m 0s'));
+  assert.deepEqual(notificationFields(recovery).map(f=>f.name),['URL','Time','Downtime']);
+  assert.ok(notificationFields(recovery).some(f=>f.name==='Downtime'&&f.value==='5m 0s'));
+  assert.match(recovery.title,/✅ RECOVERED/);
+  assert.equal(recovery.message,'Service is back online.');
   const real=buildIncidentNotification({monitor,kind:'down',occurredAt,startedAt:occurredAt,incidentId:'12',result:{ok:false,httpStatus:503,latencyMs:240,error:'HTTP 503'},dashboardUrl:'https://uptime.example.com/'});
   const test=samples[0];
   assert.equal(test.title.replace('[TEST] ',''),real.title);
   assert.equal(test.message,real.message);
   assert.equal(real.isTest,false);
+  assert.match(real.title,/^🔴 DOWN/);
+  assert.equal(real.message,'HTTP 503 — Service unavailable.');
+  assert.deepEqual(notificationFields(real).map(f=>f.name),['URL','Time']);
   const email=renderEmail(real);
   assert.ok(email.html.includes('FACT &lt;PROD&gt;'));
   assert.equal(email.html.includes('<script>'),false);
-  assert.match(email.text,/Incident: #12/);
+  assert.match(email.text,/URL: https:\/\/example.com/);
   assert.match(email.html,/View dashboard/);
 });
 
@@ -47,7 +53,7 @@ test('Discord waits for acceptance and disables mentions',async()=>{
       assert.equal(embed.title,sample.title);assert.equal(embed.description,sample.message);
       assert.deepEqual(embed.fields.map(({name,value})=>({name,value})),notificationFields(sample));
       assert.equal(embed.color,sample.kind==='down'?0xb3293e:0x17734d);
-      assert.match(embed.footer.text,/no incident was created/);
+      assert.equal(embed.footer.text,'Test notification');
       assert.equal(embed.url,'https://uptime.example.com/');
     }
   }finally {await new Promise<void>(resolve=>server.close(()=>resolve()));}

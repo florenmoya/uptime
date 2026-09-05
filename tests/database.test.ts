@@ -9,7 +9,7 @@ test('real PostgreSQL atomically persists incidents and deduplicated outbox tran
   const adminUrl=new URL(process.env.TEST_DATABASE_URL??'postgresql://postgres@localhost:5432/postgres');
   adminUrl.pathname='/postgres';
   const admin=new pg.Client({connectionString:adminUrl.toString()});await admin.connect();
-  await admin.query(`CREATE DATABASE "${database}"`);
+  await admin.query(`CREATE DATABASE "${database}" WITH TEMPLATE template0 ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C'`);
   const url=new URL(adminUrl);url.pathname=`/${database}`;
   process.env.DATABASE_URL=url.toString();
   const {pool}=await import('../src/lib/db.js');

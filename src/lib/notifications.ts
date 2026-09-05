@@ -17,7 +17,7 @@ export async function sendDiscord(payload:NotificationPayload,webhook=settings()
       username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{
         title:payload.title.slice(0,256),description:payload.message.slice(0,3800),
         color:parseInt(notificationColor(payload).slice(1),16),
-        fields:notificationFields(payload).map(field=>({...field,value:field.value.slice(0,1024),inline:!['Target','Monitor'].includes(field.name)})),
+        fields:notificationFields(payload).map(field=>({...field,value:field.value.slice(0,1024),inline:field.name!=='URL'})),
         url:payload.dashboardUrl||undefined,
         timestamp:payload.occurredAt,footer:{text:payload.isTest||payload.kind==='test'?testNotice:'Bayanko Uptime'},
       }],
