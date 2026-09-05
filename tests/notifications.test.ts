@@ -3,6 +3,28 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { SMTPServer } from 'smtp-server';
 import { sendDiscord,sendEmail } from '../src/lib/notifications.js';
+import {buildIncidentNotification,buildTestNotifications,renderEmail,notificationFields,TEST_SCENARIOS} from '../src/lib/notification-content.js';
+
+test('incident samples use the real templates, distinguish every supported scenario and escape email HTML',()=>{
+  const monitor={name:'FACT <PROD>',url:'https://example.com/?q=<script>',project:'FACT',interval_seconds:60};
+  const occurredAt='2026-09-05T16:00:00.000Z';
+  const samples=buildTestNotifications(monitor,'all',occurredAt,'https://uptime.example.com/');
+  assert.equal(samples.length,TEST_SCENARIOS.length);
+  assert.equal(new Set(samples.map(p=>p.message)).size,samples.length);
+  for(const sample of samples){assert.equal(sample.isTest,true);assert.match(sample.title,/^\[TEST\]/);assert.equal(sample.url,monitor.url);assert.ok(notificationFields(sample).some(f=>f.name==='Time'&&f.value.includes('PHT')));}
+  const recovery=samples.find(p=>p.kind==='recovered')!;
+  assert.ok(notificationFields(recovery).some(f=>f.name==='Incident duration'&&f.value==='5m 0s'));
+  const real=buildIncidentNotification({monitor,kind:'down',occurredAt,startedAt:occurredAt,incidentId:'12',result:{ok:false,httpStatus:503,latencyMs:240,error:'HTTP 503'},dashboardUrl:'https://uptime.example.com/'});
+  const test=samples[0];
+  assert.equal(test.title.replace('[TEST] ',''),real.title);
+  assert.equal(test.message,real.message);
+  assert.equal(real.isTest,false);
+  const email=renderEmail(real);
+  assert.ok(email.html.includes('FACT &lt;PROD&gt;'));
+  assert.equal(email.html.includes('<script>'),false);
+  assert.match(email.text,/Incident: #12/);
+  assert.match(email.html,/View dashboard/);
+});
 
 const payload={title:'Local verification',message:'Fixture alert; no production outage.',monitorName:'Fixture',url:'https://example.com/',kind:'test' as const,occurredAt:new Date().toISOString()};
 test('Discord waits for acceptance and disables mentions',async()=>{
@@ -18,6 +40,15 @@ test('Discord waits for acceptance and disables mentions',async()=>{
     const id=await sendDiscord(payload,`http://127.0.0.1:${port}/webhook`,true);
     assert.equal(id,'fixture-message');assert.equal(received.path,'/webhook?wait=true');
     assert.deepEqual(received.body?.allowed_mentions,{parse:[]});
+    for(const sample of buildTestNotifications({name:'FACT PROD',url:'https://example.com/',project:'FACT'},'all','2026-09-05T16:00:00.000Z','https://uptime.example.com/')){
+      await sendDiscord(sample,`http://127.0.0.1:${port}/webhook`,true);
+      const embed=(received.body?.embeds as {title:string;description:string;color:number;fields:{name:string;value:string}[];footer:{text:string};url:string}[])[0];
+      assert.equal(embed.title,sample.title);assert.equal(embed.description,sample.message);
+      assert.deepEqual(embed.fields.map(({name,value})=>({name,value})),notificationFields(sample));
+      assert.equal(embed.color,sample.kind==='down'?0xb3293e:0x17734d);
+      assert.match(embed.footer.text,/no incident was created/);
+      assert.equal(embed.url,'https://uptime.example.com/');
+    }
   }finally {await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
 test('Discord rate limit preserves provider retry timing without exposing webhook',async()=>{

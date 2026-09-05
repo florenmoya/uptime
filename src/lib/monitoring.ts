@@ -1,8 +1,8 @@
 import { pool,transaction } from './db';
-import { channelConfig } from './config';
+import { channelConfig,settings } from './config';
 import { transition,type Status } from './state';
 import { probe,type ProbeResult } from './probe';
-import type { NotificationPayload } from './notifications';
+import { buildIncidentNotification } from './notification-content';
 
 export async function recordObservation(id:string,scheduledAt:Date,version:number,result:ProbeResult,channels=channelConfig()):Promise<boolean> {
   return transaction(async client=>{
@@ -16,21 +16,23 @@ export async function recordObservation(id:string,scheduledAt:Date,version:numbe
     await client.query('UPDATE monitors SET status=$2,failures=$3,successes=$4,last_checked_at=now(),last_http_status=$5,last_latency_ms=$6,last_error=$7 WHERE id=$1',[id,state.status,state.failures,state.successes,result.httpStatus,result.latencyMs,result.error]);
     if(!event) return true;
     let incidentId:string;
-    let message:string;
+    let startedAt:string;
+    let occurredAt:string;
     if(event==='down') {
-      const incident=await client.query('INSERT INTO incidents(monitor_id,reason) VALUES($1,$2) RETURNING id',[id,result.error??'Two consecutive checks failed.']);
+      const incident=await client.query('INSERT INTO incidents(monitor_id,reason) VALUES($1,$2) RETURNING id,started_at',[id,result.error??'Two consecutive checks failed.']);
       incidentId=incident.rows[0].id;
-      message=`Two consecutive checks failed. ${result.error??'The target did not respond successfully.'}`;
+      startedAt=new Date(incident.rows[0].started_at).toISOString();
+      occurredAt=startedAt;
     }else{
-      const incident=await client.query("UPDATE incidents SET resolved_at=now(),resolution='Recovered after two healthy checks' WHERE monitor_id=$1 AND resolved_at IS NULL RETURNING id,started_at",[id]);
+      const incident=await client.query("UPDATE incidents SET resolved_at=now(),resolution='Recovered after two healthy checks' WHERE monitor_id=$1 AND resolved_at IS NULL RETURNING id,started_at,resolved_at",[id]);
       if(!incident.rowCount) return true;
       incidentId=incident.rows[0].id;
-      const minutes=Math.max(1,Math.round((Date.now()-new Date(incident.rows[0].started_at).getTime())/60000));
-      message=`Two consecutive checks passed. The confirmed incident lasted approximately ${minutes} minute${minutes===1?'':'s'}.`;
+      startedAt=new Date(incident.rows[0].started_at).toISOString();
+      occurredAt=new Date(incident.rows[0].resolved_at).toISOString();
     }
     const enabled=await client.query('SELECT alerts_enabled FROM app_settings WHERE id=true');
     if(enabled.rows[0]?.alerts_enabled) {
-      const payload:NotificationPayload={title:`${event==='down'?'Down':'Recovered'}: ${monitor.name}`,message:`${message}\nIncident #${incidentId}`,monitorName:monitor.name,url:monitor.url,kind:event,occurredAt:new Date().toISOString()};
+      const payload=buildIncidentNotification({monitor,kind:event,occurredAt,startedAt,incidentId:String(incidentId),result,dashboardUrl:settings().appUrl});
       for(const channel of ['discord','email'] as const) if(channels[channel]) await client.query('INSERT INTO deliveries(incident_id,event_key,channel,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[incidentId,`${incidentId}:${event}`,channel,JSON.stringify(payload)]);
     }
     return true;

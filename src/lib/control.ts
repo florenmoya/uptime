@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { pool,transaction } from './db';
 import { validateTarget } from './probe';
-import { channelConfig } from './config';
+import { channelConfig,settings } from './config';
+import { buildTestNotifications,TEST_SCENARIOS,type TestScenario } from './notification-content';
 
 export class InputError extends Error{}
 function text(value:unknown,label:string,max:number) {if(typeof value!=='string'||!value.trim()||value.trim().length>max)throw new InputError(`${label} must contain 1–${max} characters.`);return value.trim();}
@@ -47,7 +48,7 @@ export async function control(input:Record<string,unknown>):Promise<string> {
     if(typeof input.enabled!=='boolean')throw new InputError('Choose whether automatic alerts are enabled.');
     await transaction(async client=>{
       await client.query('UPDATE app_settings SET alerts_enabled=$1 WHERE id=true',[input.enabled]);
-      if(!input.enabled)await client.query("UPDATE deliveries SET status='canceled',last_error='Automatic alerts paused by owner' WHERE status='pending' AND payload->>'kind'!='test'");
+      if(!input.enabled)await client.query("UPDATE deliveries SET status='canceled',last_error='Automatic alerts paused by owner' WHERE status='pending' AND payload->>'kind'!='test' AND payload->>'isTest' IS DISTINCT FROM 'true'");
     });
     return input.enabled?'Automatic alerts enabled for future incident changes.':'Automatic alerts paused.';
   }
@@ -55,12 +56,19 @@ export async function control(input:Record<string,unknown>):Promise<string> {
     const channel=input.channel;
     if(channel!=='discord'&&channel!=='email')throw new InputError('Choose Discord or email.');
     if(!channelConfig()[channel])throw new InputError(`Configure ${channel==='email'?'SMTP, sender and recipient addresses':'the Discord webhook'} first.`);
+    const scenario=input.scenario??'http';
+    if(scenario!=='all'&&!TEST_SCENARIOS.some(s=>s.id===scenario))throw new InputError('Choose a valid test scenario.');
+    const monitorId=text(input.monitorId,'Monitor',80);
     return transaction(async client=>{
       await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
-      const recent=await client.query("SELECT 1 FROM deliveries WHERE channel=$1 AND payload->>'kind'='test' AND created_at>now()-interval '1 minute'",[channel]);
+      const monitor=(await client.query('SELECT name,url,project,interval_seconds FROM monitors WHERE id=$1 AND url IS NOT NULL',[monitorId])).rows[0];
+      if(!monitor)throw new InputError('Choose a monitor with a target URL.');
+      const recent=await client.query("SELECT 1 FROM deliveries WHERE channel=$1 AND (payload->>'kind'='test' OR payload->>'isTest'='true') AND created_at>now()-interval '1 minute'",[channel]);
       if(recent.rowCount)throw new InputError('A test was already requested within the last minute. Check delivery history.');
-      await client.query('INSERT INTO deliveries(event_key,channel,payload) VALUES($1,$2,$3)',[`test:${randomUUID()}`,channel,JSON.stringify({title:'Bayanko Uptime — notification test',message:'This is a local setup test. No outage is being reported.',monitorName:'Notification test',url:'',kind:'test',occurredAt:new Date().toISOString()})]);
-      return 'Test queued. Delivery history will update after the worker sends it.';
+      const samples=buildTestNotifications(monitor,scenario as TestScenario|'all',new Date().toISOString(),settings().appUrl);
+      const batch=randomUUID();
+      for(const [index,payload] of samples.entries())await client.query("INSERT INTO deliveries(event_key,channel,payload,next_attempt_at) VALUES($1,$2,$3,now()+($4::integer*interval '1 second'))",[`test:${batch}:${index}`,channel,JSON.stringify(payload),index*3]);
+      return `${samples.length===1?'Test':`${samples.length} tests`} queued. Check delivery history for results.`;
     });
   }
   if(input.action==='update'){

@@ -42,7 +42,9 @@ Admin login is enabled for `admin@bayanko.ph` through `/login`. Opening `/` whil
 
 ## Notification configuration
 
-Automatic alerts start paused for local setup. **Settings** shows channel readiness, delivery history, test buttons, and the automatic alert switch. Enabling alerts applies to future incident transitions; it does not replay historical events. Pausing cancels pending automatic deliveries, but a send already in progress may complete. Test sends are independent of the automatic alert switch and are limited to one per channel per minute.
+Automatic alerts start paused for local setup. **Settings** shows channel readiness, delivery history, test buttons, and the automatic alert switch. Enabling alerts applies to future incident transitions; it does not replay historical events. Pausing cancels pending automatic deliveries, but a send already in progress may complete. Test sends are independent of the automatic alert switch and are limited to one request per channel per minute.
+
+In **Settings → Test notifications**, select a monitor and preview an HTTP error, timeout, DNS error, TLS certificate error, connection error, redirect error, invalid target, or recovery. Choose **All 8 scenarios** to send a batch, spaced three seconds apart. Samples use the same templates as real alerts, marked `[TEST]`, without checking the target or changing monitor health or incidents. Alerts include the target, project, Philippine time, incident reference, and available HTTP/response details. Recoveries include the confirmed incident duration. Discord uses colored embeds; email includes formatted HTML and a plain-text alternative.
 
 Set `DISCORD_WEBHOOK_URL` only in `.env.local`. Discord receives embeds from **Mang Tani**, with mentions disabled. The actual webhook's default name was also updated to Mang Tani. `wait=true` requires a provider message receipt; the database records acceptance. Do not put the webhook into client code or commit it.
 

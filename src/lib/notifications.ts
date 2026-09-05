@@ -2,7 +2,8 @@ import nodemailer from 'nodemailer';
 import { settings } from './config';
 import { pool } from './db';
 
-export type NotificationPayload={title:string;message:string;monitorName:string;url:string;kind:'down'|'recovered'|'test';occurredAt:string};
+import {notificationFields,notificationColor,renderEmail,testNotice,type NotificationPayload} from './notification-content';
+export type {NotificationPayload} from './notification-content';
 export class DeliveryError extends Error {
   constructor(message:string,public retryAfterMs=0,public permanent=false){super(message);}
 }
@@ -15,9 +16,10 @@ export async function sendDiscord(payload:NotificationPayload,webhook=settings()
     response=await fetch(url,{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/json'},body:JSON.stringify({
       username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{
         title:payload.title.slice(0,256),description:payload.message.slice(0,3800),
-        color:payload.kind==='down'?0xbc3541:payload.kind==='recovered'?0x18734a:0x3b5e91,
-        fields:[{name:'Monitor',value:payload.monitorName.slice(0,1024)},{name:'Target',value:payload.url.slice(0,1024)||'Local notification test'}],
-        timestamp:payload.occurredAt,footer:{text:'Bayanko Uptime'},
+        color:parseInt(notificationColor(payload).slice(1),16),
+        fields:notificationFields(payload).map(field=>({...field,value:field.value.slice(0,1024),inline:!['Target','Monitor'].includes(field.name)})),
+        url:payload.dashboardUrl||undefined,
+        timestamp:payload.occurredAt,footer:{text:payload.isTest||payload.kind==='test'?testNotice:'Bayanko Uptime'},
       }],
     })});
   }catch {throw new DeliveryError('Discord connection failed or timed out.');}
@@ -34,7 +36,7 @@ export async function sendEmail(payload:NotificationPayload,config?:SmtpConfig):
   if(!c.host||!c.from||!c.to.length) throw new DeliveryError('Email needs SMTP, a sender and recipients.',0,true);
   const transporter=nodemailer.createTransport({host:c.host,port:c.port,secure:c.secure,auth:c.user?{user:c.user,pass:c.password}:undefined,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,requireTLS:!c.secure&&c.host!=='127.0.0.1'&&c.host!=='localhost'});
   try {
-    const info=await transporter.sendMail({from:c.from,to:c.to,subject:payload.title,text:`${payload.message}\n\nMonitor: ${payload.monitorName}\nTarget: ${payload.url}\nTime: ${payload.occurredAt}\n\nBayanko Uptime`,disableFileAccess:true,disableUrlAccess:true});
+    const info=await transporter.sendMail({from:c.from,to:c.to,subject:payload.title,...renderEmail(payload),disableFileAccess:true,disableUrlAccess:true});
     if(info.rejected?.length) throw new DeliveryError('The mail server rejected one or more recipients.',0,true);
     return String(info.messageId);
   }catch(error) {
