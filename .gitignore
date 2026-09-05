@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+.local/
+.impeccable/review/
+test-results/
+.playwright-mcp/

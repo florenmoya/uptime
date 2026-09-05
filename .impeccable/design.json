@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-05T15:16:57.639Z",
+  "title": "Design System: Bayanko Uptime",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "displayName": "Cool ground",
+        "tonalRamp": [
+          "oklch(15.00% 0.00453 258.32)",
+          "oklch(26.43% 0.00453 258.32)",
+          "oklch(37.86% 0.00453 258.32)",
+          "oklch(49.29% 0.00453 258.32)",
+          "oklch(60.71% 0.00453 258.32)",
+          "oklch(72.14% 0.00453 258.32)",
+          "oklch(83.57% 0.00453 258.32)",
+          "oklch(95.00% 0.00453 258.32)"
+        ]
+      },
+      "surface": {
+        "displayName": "White surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "ink": {
+        "displayName": "Dark ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.04244 259.74)",
+          "oklch(26.43% 0.04244 259.74)",
+          "oklch(37.86% 0.04244 259.74)",
+          "oklch(49.29% 0.04244 259.74)",
+          "oklch(60.71% 0.04244 259.74)",
+          "oklch(72.14% 0.04244 259.74)",
+          "oklch(83.57% 0.04244 259.74)",
+          "oklch(95.00% 0.04244 259.74)"
+        ]
+      },
+      "muted": {
+        "displayName": "Slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.03360 259.55)",
+          "oklch(26.43% 0.03360 259.55)",
+          "oklch(37.86% 0.03360 259.55)",
+          "oklch(49.29% 0.03360 259.55)",
+          "oklch(60.71% 0.03360 259.55)",
+          "oklch(72.14% 0.03360 259.55)",
+          "oklch(83.57% 0.03360 259.55)",
+          "oklch(95.00% 0.03360 259.55)"
+        ]
+      },
+      "line": {
+        "displayName": "Quiet divider",
+        "tonalRamp": [
+          "oklch(15.00% 0.01264 255.51)",
+          "oklch(26.43% 0.01264 255.51)",
+          "oklch(37.86% 0.01264 255.51)",
+          "oklch(49.29% 0.01264 255.51)",
+          "oklch(60.71% 0.01264 255.51)",
+          "oklch(72.14% 0.01264 255.51)",
+          "oklch(83.57% 0.01264 255.51)",
+          "oklch(95.00% 0.01264 255.51)"
+        ]
+      },
+      "navy": {
+        "displayName": "Navy ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.08665 255.58)",
+          "oklch(26.43% 0.08665 255.58)",
+          "oklch(37.86% 0.08665 255.58)",
+          "oklch(49.29% 0.08665 255.58)",
+          "oklch(60.71% 0.08665 255.58)",
+          "oklch(72.14% 0.08665 255.58)",
+          "oklch(83.57% 0.08665 255.58)",
+          "oklch(95.00% 0.08665 255.58)"
+        ]
+      },
+      "blue": {
+        "displayName": "Measured blue",
+        "tonalRamp": [
+          "oklch(15.00% 0.09908 255.93)",
+          "oklch(26.43% 0.09908 255.93)",
+          "oklch(37.86% 0.09908 255.93)",
+          "oklch(49.29% 0.09908 255.93)",
+          "oklch(60.71% 0.09908 255.93)",
+          "oklch(72.14% 0.09908 255.93)",
+          "oklch(83.57% 0.09908 255.93)",
+          "oklch(95.00% 0.09908 255.93)"
+        ]
+      },
+      "green": {
+        "displayName": "Operational green",
+        "tonalRamp": [
+          "oklch(15.00% 0.10304 160.21)",
+          "oklch(26.43% 0.10304 160.21)",
+          "oklch(37.86% 0.10304 160.21)",
+          "oklch(49.29% 0.10304 160.21)",
+          "oklch(60.71% 0.10304 160.21)",
+          "oklch(72.14% 0.10304 160.21)",
+          "oklch(83.57% 0.10304 160.21)",
+          "oklch(95.00% 0.10304 160.21)"
+        ]
+      },
+      "green-soft": {
+        "displayName": "Healthy surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.01319 159.92)",
+          "oklch(26.43% 0.01319 159.92)",
+          "oklch(37.86% 0.01319 159.92)",
+          "oklch(49.29% 0.01319 159.92)",
+          "oklch(60.71% 0.01319 159.92)",
+          "oklch(72.14% 0.01319 159.92)",
+          "oklch(83.57% 0.01319 159.92)",
+          "oklch(95.00% 0.01319 159.92)"
+        ]
+      },
+      "red": {
+        "displayName": "Incident red",
+        "tonalRamp": [
+          "oklch(15.00% 0.17309 18.02)",
+          "oklch(26.43% 0.17309 18.02)",
+          "oklch(37.86% 0.17309 18.02)",
+          "oklch(49.29% 0.17309 18.02)",
+          "oklch(60.71% 0.17309 18.02)",
+          "oklch(72.14% 0.17309 18.02)",
+          "oklch(83.57% 0.17309 18.02)",
+          "oklch(95.00% 0.17309 18.02)"
+        ]
+      },
+      "red-soft": {
+        "displayName": "Error surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.01627 12.78)",
+          "oklch(26.43% 0.01627 12.78)",
+          "oklch(37.86% 0.01627 12.78)",
+          "oklch(49.29% 0.01627 12.78)",
+          "oklch(60.71% 0.01627 12.78)",
+          "oklch(72.14% 0.01627 12.78)",
+          "oklch(83.57% 0.01627 12.78)",
+          "oklch(95.00% 0.01627 12.78)"
+        ]
+      },
+      "amber": {
+        "displayName": "Setup amber",
+        "tonalRamp": [
+          "oklch(15.00% 0.09342 68.67)",
+          "oklch(26.43% 0.09342 68.67)",
+          "oklch(37.86% 0.09342 68.67)",
+          "oklch(49.29% 0.09342 68.67)",
+          "oklch(60.71% 0.09342 68.67)",
+          "oklch(72.14% 0.09342 68.67)",
+          "oklch(83.57% 0.09342 68.67)",
+          "oklch(95.00% 0.09342 68.67)"
+        ]
+      },
+      "amber-soft": {
+        "displayName": "Warning surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.02110 85.94)",
+          "oklch(26.43% 0.02110 85.94)",
+          "oklch(37.86% 0.02110 85.94)",
+          "oklch(49.29% 0.02110 85.94)",
+          "oklch(60.71% 0.02110 85.94)",
+          "oklch(72.14% 0.02110 85.94)",
+          "oklch(83.57% 0.02110 85.94)",
+          "oklch(95.00% 0.02110 85.94)"
+        ]
+      },
+      "history-pass": {
+        "displayName": "Passed observation",
+        "tonalRamp": [
+          "oklch(15.00% 0.10631 165.70)",
+          "oklch(26.43% 0.10631 165.70)",
+          "oklch(37.86% 0.10631 165.70)",
+          "oklch(49.29% 0.10631 165.70)",
+          "oklch(60.71% 0.10631 165.70)",
+          "oklch(72.14% 0.10631 165.70)",
+          "oklch(83.57% 0.10631 165.70)",
+          "oklch(95.00% 0.10631 165.70)"
+        ]
+      },
+      "history-fail": {
+        "displayName": "Failed observation",
+        "tonalRamp": [
+          "oklch(15.00% 0.15366 15.92)",
+          "oklch(26.43% 0.15366 15.92)",
+          "oklch(37.86% 0.15366 15.92)",
+          "oklch(49.29% 0.15366 15.92)",
+          "oklch(60.71% 0.15366 15.92)",
+          "oklch(72.14% 0.15366 15.92)",
+          "oklch(83.57% 0.15366 15.92)",
+          "oklch(95.00% 0.15366 15.92)"
+        ]
+      },
+      "history-empty": {
+        "displayName": "No observation",
+        "tonalRamp": [
+          "oklch(15.00% 0.01090 256.70)",
+          "oklch(26.43% 0.01090 256.70)",
+          "oklch(37.86% 0.01090 256.70)",
+          "oklch(49.29% 0.01090 256.70)",
+          "oklch(60.71% 0.01090 256.70)",
+          "oklch(72.14% 0.01090 256.70)",
+          "oklch(83.57% 0.01090 256.70)",
+          "oklch(95.00% 0.01090 256.70)"
+        ]
+      },
+      "focus": {
+        "displayName": "Focus blue",
+        "tonalRamp": [
+          "oklch(15.00% 0.08387 255.67)",
+          "oklch(26.43% 0.08387 255.67)",
+          "oklch(37.86% 0.08387 255.67)",
+          "oklch(49.29% 0.08387 255.67)",
+          "oklch(60.71% 0.08387 255.67)",
+          "oklch(72.14% 0.08387 255.67)",
+          "oklch(83.57% 0.08387 255.67)",
+          "oklch(95.00% 0.08387 255.67)"
+        ]
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "button-color",
+        "value": "background .16s ease, color .16s ease",
+        "purpose": "Subtle hover changes."
+      },
+      {
+        "name": "history-hover",
+        "value": "transform .12s ease",
+        "purpose": "Emphasize one observed minute on hover."
+      },
+      {
+        "name": "expansion",
+        "value": "transform .18s ease",
+        "purpose": "Rotate the monitor chevron."
+      },
+      {
+        "name": "switch-thumb",
+        "value": "transform .16s ease",
+        "purpose": "Move the alert preference thumb."
+      },
+      {
+        "name": "busy-refresh",
+        "value": "spin 1s linear infinite",
+        "purpose": "Indicate an action in progress."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation:none; transition:none; scroll-behavior:auto",
+        "purpose": "Honor reduced-motion preferences."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1450px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1100px"
+      },
+      {
+        "name": "tablet-max",
+        "value": "800px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "720px"
+      },
+      {
+        "name": "public-mobile-max",
+        "value": "760px"
+      },
+      {
+        "name": "public-compact-max",
+        "value": "1050px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Public service row",
+      "kind": "custom",
+      "description": "Public board with a dark masthead, overlapping white overall-health summary, and 12px container corners. The main outer cap is 1304px including 32px gutters, aligned with a 1240px masthead interior. Compact 83px service rows align name, checks-passed percentage, 30 daily bars, and current status; at 760px they reflow to identity/status, labeled percentage, then history with 20px main gutters. Percentages use recorded checks from the last 30 days, exclude gaps, and show three decimal places or an em dash without observations. Daily history distinguishes healthy, mixed, failed, and unobserved using the status-bar tokens. Hover, tap, or keyboard selects a date; Left/Right and Home/End navigate, Escape dismisses, and the associated tooltip reports date, percentage, and passed/total checks. The masthead shows Philippine-time last refresh, a 30-second countdown, Refreshing… when due, and Updates delayed after 45 seconds without fresh data. History accessibility: healthy fill #258653, mixed fill #a16d16, and missing-day outline #768395 provide at least 3:1 contrast against white. Tooltips allow continuous hover travel and Escape dismissal. A Daily details disclosure and native date selector provide 44px viewing targets and an announced percentage/count result on every viewport; rows expand naturally. The static specimen below illustrates an unobserved row; the live board provides daily interaction. Private dashboard and sign-in retain the Operations Register identity.",
+      "html": "<article class=\"ds-public-service\"><h2>Example service</h2><div class=\"ds-public-score\"><strong>—</strong><span>Checks passed</span></div><p>No observations in the last 30 days</p><span class=\"ds-public-state\"><i aria-hidden=\"true\"></i>Unknown</span></article>",
+      "css": ".ds-public-service{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:var(--surface,#fff);color:var(--ink,#202d42);display:grid;grid-template-columns:minmax(190px,1.25fr) 102px minmax(260px,2fr) 105px;gap:24px;align-items:center;min-height:83px;border-bottom:1px solid var(--line,#e0e6ee)}.ds-public-service h2{margin:0;font-size:13px;font-weight:550;overflow-wrap:anywhere}.ds-public-score strong{font-size:15px;font-weight:550;color:var(--muted,#5c687b)}.ds-public-score span{display:block;font-size:10px;color:var(--muted,#5c687b)}.ds-public-state{font-size:11px;color:var(--muted,#5c687b);display:flex;justify-content:flex-end;align-items:center;gap:7px}.ds-public-state i{width:7px;height:7px;border-radius:50%;background:currentColor}.ds-public-service p{font-size:11px;color:var(--muted,#5c687b)}@media(max-width:1050px){.ds-public-service{grid-template-columns:minmax(150px,1fr) 88px minmax(200px,1.5fr) 88px;gap:16px}}@media(max-width:760px){.ds-public-service{grid-template-columns:minmax(0,1fr) auto;gap:12px 8px;padding:18px 0;min-height:0}.ds-public-service h2{grid-column:1;grid-row:1;font-size:12px}.ds-public-state{grid-column:2;grid-row:1;font-size:10px}.ds-public-score{grid-column:1/-1;grid-row:2;display:flex;align-items:baseline;gap:8px}.ds-public-service p{grid-column:1/-1;grid-row:3;margin:0}}"
+    },
+    {
+      "name": "Public page editor",
+      "kind": "custom",
+      "description": "Inline Settings editor with 8px corners, persistent labels, native service and publication checkboxes, description count, and Cancel/Save actions. Fields and service choices stack at 600px. Public page rows show path, service count, Published/Draft state, and Open page for published pages. Target URLs and technical errors stay private.",
+      "html": "<div class=\"ds-page-editor\"><label>Description<textarea maxlength=\"280\" placeholder=\"Current availability of services.\"></textarea><span>0/280</span></label></div>",
+      "css": ".ds-page-editor{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;padding:22px;background:var(--surface,#fff);color:var(--ink,#202d42);border:1px solid var(--line,#e0e6ee);border-radius:8px}.ds-page-editor label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:550}.ds-page-editor textarea{min-width:0;min-height:80px;border:1px solid #bbc8d9;border-radius:6px;padding:9px;color:inherit;font:inherit;background:white;resize:vertical}.ds-page-editor label>span{font-size:10px;color:var(--muted,#5c687b);text-align:right}.ds-page-editor textarea:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(max-width:600px){.ds-page-editor{padding:17px}}"
+    },
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Prominent action for the page or inline editor.",
+      "html": "<button class=\"ds-primary\">Run checks</button>",
+      "css": ".ds-primary{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;border:1px solid var(--navy,#254875);background:var(--navy,#254875);color:white;border-radius:7px;padding:9px 14px;font-size:13px;font-weight:550;line-height:1.5;cursor:pointer;transition:background .16s ease,color .16s ease}.ds-primary:hover:not(:disabled){background:#173b69}.ds-primary:disabled{opacity:.45;cursor:not-allowed}.ds-primary:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Small button",
+      "kind": "button",
+      "refersTo": "button-small",
+      "description": "Local monitor and channel actions.",
+      "html": "<button class=\"ds-small\">Edit monitor</button>",
+      "css": ".ds-small{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;border:1px solid #cbd5e2;background:var(--surface,#fff);color:var(--ink,#202d42);border-radius:6px;padding:6px 10px;font-size:12px;line-height:1.5;cursor:pointer;transition:background .16s ease,color .16s ease}.ds-small:hover:not(:disabled){background:#edf2f8}.ds-small:disabled{opacity:.45;cursor:not-allowed}.ds-small:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-small{transition:none}}"
+    },
+    {
+      "name": "Icon button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "Compact monitor expansion control.",
+      "html": "<button class=\"ds-icon\" aria-label=\"Expand monitor\" aria-expanded=\"false\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></button>",
+      "css": ".ds-icon{display:inline-flex;align-items:center;justify-content:center;padding:7px;border:0;border-radius:6px;background:none;color:var(--muted,#5c687b);cursor:pointer;transition:background .16s ease,color .16s ease}.ds-icon:hover{background:#e8edf4;color:var(--ink,#202d42)}.ds-icon svg{transition:transform .18s ease}.ds-icon[aria-expanded=true] svg{transform:rotate(180deg)}.ds-icon:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-icon,.ds-icon svg{transition:none}}"
+    },
+    {
+      "name": "Monitor field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labeled fields inside an expanded monitor editor.",
+      "html": "<label class=\"ds-label\">Target URL<input class=\"ds-input\" type=\"url\" placeholder=\"https://your-service.example/health\"></label>",
+      "css": ".ds-label{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:550;color:var(--ink,#202d42)}.ds-input{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:14px;line-height:1.5;background:white;border:1px solid #bbc8d9;border-radius:6px;min-height:37px;padding:7px 10px;color:var(--ink,#202d42);caret-color:var(--blue,#365f95);min-width:0}.ds-input::placeholder{color:#657186}.ds-input:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}"
+    },
+    {
+      "name": "Main navigation",
+      "kind": "nav",
+      "description": "Horizontal text navigation with a single navy active underline.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><button aria-current=\"page\">Overview</button><button>Incidents</button><button>Settings</button></nav>",
+      "css": ".ds-nav{display:flex;gap:30px;height:62px;border-bottom:1px solid var(--line,#e0e6ee)}.ds-nav button{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;height:100%;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted,#5c687b);padding:0 1px;font-size:13px;font-weight:550;cursor:pointer;transition:color .16s ease}.ds-nav button:hover{color:var(--ink,#202d42)}.ds-nav button[aria-current=page]{color:var(--navy,#254875);border-bottom-color:var(--navy,#254875)}.ds-nav button:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(max-width:720px){.ds-nav{height:53px;gap:28px}}@media(prefers-reduced-motion:reduce){.ds-nav button{transition:none}}"
+    },
+    {
+      "name": "Status filter",
+      "kind": "chip",
+      "refersTo": "filter-selected",
+      "description": "A selected filter with a compact count.",
+      "html": "<button class=\"ds-filter\" aria-pressed=\"true\">All monitors <span>6</span></button>",
+      "css": ".ds-filter{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:var(--muted,#5c687b);font-size:12px;font-weight:550;padding:6px 9px;border-radius:5px;cursor:pointer;transition:background .16s ease,color .16s ease}.ds-filter:hover{background:#f0f3f8}.ds-filter[aria-pressed=true]{background:#e9eff7;color:var(--navy,#254875)}.ds-filter span{font-size:10px;background:#d7e2f0;padding:0 5px;border-radius:3px}.ds-filter:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-filter{transition:none}}"
+    },
+    {
+      "name": "Register surface",
+      "kind": "card",
+      "refersTo": "register",
+      "description": "Shared white container with thin dividers and flat rows.",
+      "html": "<section class=\"ds-register\" aria-label=\"Monitors\"><div class=\"ds-toolbar\">All monitors</div><div class=\"ds-row\"><span class=\"ds-dot\"></span><div><strong>FACT PROD</strong><p>FACT <span>Needs URL</span></p></div></div></section>",
+      "css": ".ds-register{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:var(--surface,#fff);color:var(--ink,#202d42);border:1px solid var(--line,#e0e6ee);border-radius:var(--radius,12px);overflow:hidden}.ds-toolbar{padding:17px 20px;border-bottom:1px solid var(--line,#e0e6ee);font-size:12px;color:var(--navy,#254875)}.ds-row{display:flex;align-items:center;gap:13px;min-height:96px;padding:0 22px}.ds-row strong{font-size:13px;font-weight:600}.ds-row p{margin:6px 0 0;font-size:11px;color:var(--muted,#5c687b)}.ds-row p span{margin-left:9px;color:var(--amber,#805318)}.ds-dot{width:8px;height:8px;border-radius:50%;background:#b28134;flex-shrink:0}"
+    },
+    {
+      "name": "History strip",
+      "kind": "custom",
+      "description": "Sixty minute buckets with passed, failed, and absent observations; values below are a labeled style specimen.",
+      "html": "<div class=\"ds-history-wrap\"><div class=\"ds-history\" role=\"img\" aria-label=\"Style specimen: 56 minutes without observations, 3 passed, 1 failed.\"><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-empty\" title=\"No check recorded\"></span><span class=\"ds-good\" title=\"Check passed\"></span><span class=\"ds-good\" title=\"Check passed\"></span><span class=\"ds-bad\" title=\"Check failed\"></span><span class=\"ds-good\" title=\"Check passed\"></span></div><div class=\"ds-history-labels\"><span>60 minutes ago</span><span>Now</span></div></div>",
+      "css": ".ds-history-wrap{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;}.ds-history{display:flex;height:24px;gap:2px}.ds-history>span{flex:1;min-width:1px;height:100%;border-radius:1.5px;transition:transform .12s ease}.ds-history>span:hover{transform:scaleY(1.2)}.ds-good{background:#319471}.ds-bad{background:#c24a59}.ds-empty{background:#e3e8ef}.ds-history-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted,#5c687b);margin-top:7px}@media(max-width:720px){.ds-history{height:20px}.ds-history-labels{font-size:9px;margin-top:5px}}@media(prefers-reduced-motion:reduce){.ds-history>span{transition:none}}"
+    },
+    {
+      "name": "Delivery status",
+      "kind": "chip",
+      "description": "Compact textual tags for notification delivery states.",
+      "html": "<div class=\"ds-tags\"><span class=\"ds-status ds-sent\">Sent</span><span class=\"ds-status ds-failed\">Failed</span><span class=\"ds-status ds-pending\">Queued</span><span class=\"ds-status\">Canceled</span></div>",
+      "css": ".ds-tags{display:flex;gap:8px;flex-wrap:wrap}.ds-status{font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:11px;display:inline-block;padding:3px 8px;border-radius:4px;background:#e9eef5;color:var(--muted,#5c687b)}.ds-sent{background:#e5f3eb;color:var(--green,#17734d)}.ds-failed{background:var(--red-soft,#fff0f1);color:var(--red,#b3293e)}.ds-pending{background:var(--amber-soft,#fff8e9);color:var(--amber,#805318)}"
+    },
+    {
+      "name": "Alert switch",
+      "kind": "button",
+      "description": "Boolean alert preference; green indicates enabled. Preview is static.",
+      "html": "<button class=\"ds-switch\" role=\"switch\" aria-checked=\"true\" aria-label=\"Automatic incident alerts\"><span></span></button>",
+      "css": ".ds-switch{width:38px;height:22px;border:0;border-radius:12px;background:#8897aa;position:relative;cursor:pointer;transition:background .16s ease}.ds-switch>span{display:block;width:16px;height:16px;border-radius:50%;background:white;position:absolute;left:3px;top:3px;transition:transform .16s ease}.ds-switch[aria-checked=true]{background:var(--green,#17734d)}.ds-switch[aria-checked=true]>span{transform:translateX(16px)}.ds-switch:disabled{opacity:.45;cursor:not-allowed}.ds-switch:focus-visible{outline:3px solid var(--focus,#7499ca);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-switch,.ds-switch>span{transition:none}}"
+    },
+    {
+      "name": "Sign-in panel",
+      "kind": "custom",
+      "refersTo": "login-panel",
+      "description": "Operations Register private-access panel in a centered column capped at 410px. Persistent labels, password reveal, credential autofill, inline alert, and a full-width submit action. This static specimen shows the default state; live submission disables fields and submit, marks the form busy, and reads Signing in… with a spinner. Failures restore input and show the alert. Focus uses the shared outline and reduced motion suppresses the spinner.",
+      "html": "<section class=\"ds-login\" aria-labelledby=\"ds-login-title\"><h1 id=\"ds-login-title\">Sign in</h1><p class=\"ds-login-intro\">Your services, checks, and alerts in one place.</p><form><label for=\"ds-login-email\">Email address</label><input id=\"ds-login-email\" type=\"email\" autocomplete=\"username\" placeholder=\"you@example.com\" required><label for=\"ds-login-password\">Password</label><div class=\"ds-login-password\"><input id=\"ds-login-password\" type=\"password\" autocomplete=\"current-password\" required><button type=\"button\" aria-label=\"Show password\" aria-pressed=\"false\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg></button></div><button class=\"ds-login-submit\" type=\"button\">Sign in<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-7-7 7 7-7 7\"/></svg></button></form></section>",
+      "css": ".ds-login{box-sizing:border-box;width:100%;max-width:410px;background:var(--surface,#fff);border:1px solid var(--line,#e0e6ee);border-radius:12px;padding:32px;color:var(--ink,#202d42);font:14px/1.5 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-login h1{margin:0;font-size:27px;line-height:1.25;letter-spacing:-.025em;font-weight:650}.ds-login-intro{font-size:13px;line-height:1.6;color:var(--muted,#5c687b);margin:10px 0 26px}.ds-login form{display:flex;flex-direction:column}.ds-login label{font-size:12px;font-weight:600;margin-bottom:8px}.ds-login input{box-sizing:border-box;width:100%;min-width:0;border:1px solid #bbc8d9;border-radius:6px;background:white;color:inherit;font:15px/1.5 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;padding:11px 12px;min-height:45px;caret-color:var(--blue,#365f95)}.ds-login input::placeholder{color:#657186}.ds-login input[type=email]{margin-bottom:20px}.ds-login-password{position:relative}.ds-login-password input{padding-right:46px}.ds-login button{cursor:pointer;transition:background .16s ease,color .16s ease}.ds-login-password button{position:absolute;right:4px;top:4px;min-width:37px;min-height:37px;display:inline-flex;align-items:center;justify-content:center;padding:7px;border:0;border-radius:6px;background:none;color:var(--muted,#5c687b)}.ds-login-password button:hover{background:#e8edf4;color:var(--ink,#202d42)}.ds-login-submit{margin-top:26px;min-height:45px;width:100%;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--navy,#254875);background:var(--navy,#254875);color:white;border-radius:7px;padding:9px 14px;font:550 13px/1.5 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-login-submit:hover:not(:disabled){background:#173b69}.ds-login button:disabled{cursor:not-allowed;opacity:.45}.ds-login input:focus-visible,.ds-login button:focus-visible{outline:3px solid #7499ca;outline-offset:3px}.ds-login-error{color:var(--red,#b3293e);background:var(--red-soft,#fff0f1);padding:10px 12px;border-radius:6px;font-size:12px;margin:16px 0 0}.ds-login-error+.ds-login-submit{margin-top:16px}@media(max-width:600px){.ds-login{padding:26px 22px}.ds-login input{font-size:16px}}@media(prefers-reduced-motion:reduce){.ds-login button{transition:none}}"
+    },
+    {
+      "name": "Header sign out",
+      "kind": "button",
+      "refersTo": "button-small",
+      "description": "Persistent dashboard header action. The disabled pending state reads Signing out…; failure shows Sign out failed. Try again. below the button. At 600px and below the worker indicator is hidden and Sign out retains a minimum height of 36px.",
+      "html": "<div class=\"ds-logout\"><button type=\"button\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m16 17 5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/></svg>Sign out</button></div>",
+      "css": ".ds-logout{position:relative}.ds-logout button{font:12px/1.5 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;border:1px solid #cbd5e2;background:var(--surface,#fff);border-radius:6px;padding:6px 10px;color:var(--ink,#202d42);cursor:pointer;transition:background .16s ease,color .16s ease}.ds-logout button:hover:not(:disabled){background:#edf2f8}.ds-logout button:disabled{opacity:.45;cursor:not-allowed}.ds-logout button:focus-visible{outline:3px solid #7499ca;outline-offset:3px}.ds-logout>span{position:absolute;top:100%;right:0;background:var(--surface,#fff);color:var(--red,#b3293e);padding:8px;min-width:170px;font:11px/1.5 -apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;z-index:2}@media(max-width:720px){.ds-logout button{font-size:11px;padding:6px 8px}}@media(max-width:600px){.ds-logout button{min-height:36px}}@media(prefers-reduced-motion:reduce){.ds-logout button{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Operations Register",
+    "overview": "A quiet, compact workspace for checking service health during a working day. Cool gray ground, clean white rows, blue ink, aligned measurements, and restrained outline icons keep six private monitors easy to scan. Status color carries meaning; decoration is minimal.\n\nThe existing implementation is the authority for this document: `src/app/globals.css`, the dashboard, monitor-row and settings-panel components, and the desktop/mobile captures in `.impeccable/review/`. This is a record of the built interface. Component behaviors described beyond the overview screenshots were verified from source.",
+    "keyCharacteristics": [
+      "Health and freshness appear before configuration detail.",
+      "Stable rows align names, observations, response times, and pass rates.",
+      "Pale surfaces, thin borders, and modest corners provide structure.",
+      "Unknown and absent observations remain explicit."
+    ],
+    "rules": [
+      {
+        "name": "The Observation Rule",
+        "body": "An empty bucket is not a passed check. Preserve separate passed, failed, and no-observation treatments, and retain accompanying text.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** keep status, observation age, and coverage visible alongside numeric results.",
+      "**Do** preserve the responsive row reflow and explicit mobile metric labels.",
+      "**Do** place monitor details and editing beneath the selected row.",
+      "**Do** pair color with labels, icons, legends, or accessible descriptions.",
+      "**Do** use the existing flat surfaces, compact type, and shared alignment for future screens."
+    ],
+    "donts": [
+      "**Don't** fill missing history with successful checks or imply that local history was imported.",
+      "**Don't** treat an individual failed history bucket as interchangeable with a confirmed incident.",
+      "**Don't** turn unknown, paused, or unconfigured monitors into a healthy state.",
+      "**Don't** add decorative hero regions, imagery, or shadowed cards to this operations register."
+    ]
+  }
+}

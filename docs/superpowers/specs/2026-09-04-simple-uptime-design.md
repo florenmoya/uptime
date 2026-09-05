@@ -1,0 +1,17 @@
+# Personal uptime monitor
+
+This supersedes the earlier SaaS proposal per the user's 4 September instruction. Build and verify locally now; prepare the same source for bayanko VM deployment later.
+
+5 September configuration update: the owner supplied both FACT targets and an Amazon RDS uptime_db connection. All six are now configured; the app uses RDS over verified TLS, with local history copied and verified. Discord's webhook and sender are named Mang Tani. See the [configuration verification](../../verification/2026-09-05-rds-and-fact.md). The initial missing-target state described below is retained as design history.
+
+One Next.js dashboard and one persistent Node worker share PostgreSQL. No external scheduler, Redis, account system, billing, regional quorum or hosted platform integration is required. The worker uses a PostgreSQL advisory lock to prevent two instances from scheduling duplicates. A stopped checker is shown as stale, never healthy by inference.
+
+Six seed records retain the exact source names. HTTPS roots are explicit starting targets for the four domain names; they are not claimed to be the hidden original UptimeRobot targets. FACT PROD and FACT UAT remain unconfigured. All targets can be edited, paused and resumed from the dashboard. Use GET, require 200–399 after following at most five redirects, validate TLS, reject credentials and non-public destinations including redirect targets, and abort after ten seconds. Retry confirmation means two consecutive scheduled failed checks; no alert for a single failure. Close incidents after two consecutive healthy checks. Reset streaks after gaps, edits or resume.
+
+Store each actual observation and its scheduled time. Show current status, last observation, latency, 24-hour check success ratio and coverage, recent response-time charts, incidents and notification results. Missing data is gray and excluded from the check success denominator; label ratios as observations, not guaranteed time availability. Keep observations for 30 days and incident/delivery history for 90 days. Six monitors produce 8,640 normal observations/day.
+
+Insert incident transitions and outbox deliveries in the same transaction. One delivery per event/channel; retries are persistent, bounded to eight attempts with backoff and Discord retry-after support. Honor Discord allowed_mentions and wait=true. Send no repeated alerts while an incident remains open. SMTP and Discord fail independently. A provider timeout after acceptance can produce a duplicate; do not claim exactly-once delivery. Development test sends are labeled clearly. Test SMTP against a local capture server until real SMTP details and recipients exist.
+
+The app and VM launch bind to 127.0.0.1:3100. Access the VM dashboard through an SSH tunnel initially. Host and Origin validation protect local mutation routes from cross-site requests. Keep secrets in an ignored .env.local; expose only configuration booleans. No public registration or arbitrary public monitor API. Public hosting needs explicit access protection before rebinding.
+
+Validation: state-transition tests, public-address and HTTP probe tests, delivery tests using local HTTP/SMTP fixtures, real PostgreSQL persistence/rollback/dedup checks, actual target probes, production build, and desktop/mobile browser flows. Do not simulate outages against the six real sites. Local fixture outage tests are isolated from the real webhook.

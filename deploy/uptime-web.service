@@ -1,0 +1,25 @@
+[Unit]
+Description=Bayanko Uptime dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=uptime
+Group=uptime
+WorkingDirectory=/opt/uptime/current
+Environment=NODE_ENV=production
+Environment=PATH=/opt/uptime/runtime/node/bin:/usr/bin:/bin
+Environment=NODE_OPTIONS=--max-old-space-size=256
+ExecStart=/opt/uptime/runtime/node/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/uptime/current/.next
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+# Bayanko Uptime
+
+A private operations dashboard for six PhilGEPS monitors. The owner checks health, response times and incidents, edits target URLs, and receives Discord and email notifications. Local testing comes first; deployment will use the existing bayanko VM over SSH. No SaaS, registration, billing, teams or multi-region probes.
+
+The owner can create public status pages in Settings, choosing the name, slug, description and services, then publish or return a page to draft. Public visitors only view current health, daily observations and generic incident history; there are no management commands, target URLs, technical errors or notification configuration. The initial page is /status/philgeps. Admin credentials protect management routes when exposing the app through HTTPS on the VM; local testing remains on loopback.
+
+Source: https://stats.uptimerobot.com/xKcrfn6ZAX. Names: emarket-svc.philgeps.gov.ph, emarket.philgeps.gov.ph, FACT PROD, FACT UAT, philgeps.gov.ph, training.philgeps.gov.ph. The public source hides all target URLs. Domain-name monitors use explicit HTTPS-root starting targets. On 5 September the owner supplied FACT PROD at http://126.52.131.6/ and FACT UAT at http://136.158.228.120/; both are configured and checking. Observed history must never be presented as imported UptimeRobot history.
+
+Check each configured monitor every 60 seconds with a 10-second timeout and confirmation after two consecutive failures; recovery after two consecutive successes. PostgreSQL persists history, incidents and independently retried notification deliveries. Missing checks appear unknown. A quiet, compact interface is used during a working day to identify problems quickly. Technical configuration belongs in Settings or a monitor edit form.
+
+The app now uses the owner's Amazon RDS uptime_db database with certificate and hostname verification. Existing local history was copied and verified; the original localhost uptime database remains intact. Keep connection credentials and the webhook in ignored server configuration. The Discord webhook is named Mang Tani. Gmail SMTP and the recipient are configured; both channels passed live acceptance tests. Automatic incident alerts are enabled now that all six targets and both channels are configured. All mutations are restricted to the local/private dashboard. Bind HTTP to loopback; use an SSH tunnel for the first VM deployment.
+
+Private access uses an email/password login page and an eight-hour server session. The header provides Sign out; logout revokes the session. Signed-out navigation returns to /login while public status pages remain accessible. No browser password popup or public registration is used.
