@@ -27,6 +27,7 @@ test('incident samples use the real templates, distinguish every supported scena
 });
 
 const payload={title:'Local verification',message:'Fixture alert; no production outage.',monitorName:'Fixture',url:'https://example.com/',kind:'test' as const,occurredAt:new Date().toISOString()};
+type CapturedEmbed={title:string;description:string;color:number;fields:{name:string;value:string}[];footer:{text:string};url:string};
 test('Discord waits for acceptance and disables mentions',async()=>{
   let received:{path?:string;body?:Record<string,unknown>}={};
   const server=createServer(async(req,res)=>{
@@ -42,7 +43,7 @@ test('Discord waits for acceptance and disables mentions',async()=>{
     assert.deepEqual(received.body?.allowed_mentions,{parse:[]});
     for(const sample of buildTestNotifications({name:'FACT PROD',url:'https://example.com/',project:'FACT'},'all','2026-09-05T16:00:00.000Z','https://uptime.example.com/')){
       await sendDiscord(sample,`http://127.0.0.1:${port}/webhook`,true);
-      const embed=(received.body?.embeds as {title:string;description:string;color:number;fields:{name:string;value:string}[];footer:{text:string};url:string}[])[0];
+      const embed:CapturedEmbed=(received.body?.embeds as CapturedEmbed[])[0];
       assert.equal(embed.title,sample.title);assert.equal(embed.description,sample.message);
       assert.deepEqual(embed.fields.map(({name,value})=>({name,value})),notificationFields(sample));
       assert.equal(embed.color,sample.kind==='down'?0xb3293e:0x17734d);
