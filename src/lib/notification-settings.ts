@@ -5,8 +5,8 @@ import {settings} from './config';
 
 type DiscordSettings={enabled:boolean;webhook:string};
 export type EmailSettings={enabled:boolean;host:string;port:number;secure:boolean;user:string;password:string;from:string;to:string[]};
-export type NotificationSettings={discord:DiscordSettings;email:EmailSettings};
-export type NotificationSettingsView={discord:{enabled:boolean;hasWebhook:boolean};email:Omit<EmailSettings,'password'>&{hasPassword:boolean}};
+export type NotificationSettings={discord:DiscordSettings;email:EmailSettings;overview:DiscordSettings};
+export type NotificationSettingsView={discord:{enabled:boolean;hasWebhook:boolean};email:Omit<EmailSettings,'password'>&{hasPassword:boolean};overview:{enabled:boolean;hasWebhook:boolean}};
 export class NotificationSettingsError extends Error{}
 
 function key(){
@@ -31,12 +31,14 @@ export async function getNotificationSettings(client:Pool|PoolClient=pool):Promi
   const env=settings();
   const current:NotificationSettings={
     discord:{enabled:Boolean(env.discordWebhook),webhook:env.discordWebhook},
+    overview:{enabled:true,webhook:''},
     email:{enabled:Boolean(env.smtpHost&&env.mailFrom&&env.mailTo.length),host:env.smtpHost,port:env.smtpPort,secure:env.smtpSecure,user:env.smtpUser,password:env.smtpPassword,from:env.mailFrom,to:env.mailTo},
   };
   const saved=await client.query('SELECT channel,encrypted_config FROM notification_settings');
   for(const row of saved.rows){
     if(row.channel==='discord')current.discord=decrypt('discord',row.encrypted_config);
     if(row.channel==='email')current.email=decrypt('email',row.encrypted_config);
+    if(row.channel==='overview')current.overview=decrypt('overview',row.encrypted_config);
   }
   return current;
 }
@@ -45,7 +47,7 @@ export function notificationReadiness(current:NotificationSettings){
 }
 export function notificationSettingsView(current:NotificationSettings):NotificationSettingsView{
   const {password,...email}=current.email;
-  return {discord:{enabled:current.discord.enabled,hasWebhook:Boolean(current.discord.webhook)},email:{...email,hasPassword:Boolean(password)}};
+  return {discord:{enabled:current.discord.enabled,hasWebhook:Boolean(current.discord.webhook)},email:{...email,hasPassword:Boolean(password)},overview:{enabled:current.overview.enabled,hasWebhook:Boolean(current.overview.webhook)}};
 }
 function field(value:unknown,label:string,max:number,required=true){
   if(typeof value!=='string'||value.length>max||/[\r\n\0]/.test(value)||(required&&!value.trim()))throw new NotificationSettingsError(`Enter a valid ${label}.`);
@@ -54,21 +56,21 @@ function field(value:unknown,label:string,max:number,required=true){
 function mailbox(value:string){return /^[^\s<>@,]+@[^\s<>@,]+\.[^\s<>@,]+$/.test(value);}
 export async function saveNotificationSettings(input:Record<string,unknown>){
   const channel=input.channel;
-  if(channel!=='discord'&&channel!=='email')throw new NotificationSettingsError('Choose Discord or email.');
+  if(channel!=='discord'&&channel!=='email'&&channel!=='overview')throw new NotificationSettingsError('Choose a notification channel.');
   if(typeof input.enabled!=='boolean')throw new NotificationSettingsError('Choose whether the channel is enabled.');
   const enabled=input.enabled;
   await transaction(async client=>{
     await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
     const current=await getNotificationSettings(client);
     let next:DiscordSettings|EmailSettings;
-    if(channel==='discord'){
+    if(channel==='discord'||channel==='overview'){
       const replacement=field(input.webhook??'','Discord webhook URL',500,false);
-      const webhook=replacement||current.discord.webhook;
+      const webhook=channel==='overview'&&input.useIncidentWebhook===true?'':replacement||current[channel].webhook;
       if(webhook){
         let valid=false;try{const url=new URL(webhook);valid=url.origin==='https://discord.com'&&!url.username&&!url.password&&!url.search&&!url.hash&&/^\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/.test(url.pathname);}catch{}
         if(!valid)throw new NotificationSettingsError('Enter a valid Discord webhook URL.');
       }
-      if(enabled&&!webhook)throw new NotificationSettingsError('Enter a Discord webhook URL.');
+      if(enabled&&!webhook&&channel==='discord')throw new NotificationSettingsError('Enter a Discord webhook URL.');
       next={enabled,webhook};
     }else{
       const host=field(input.host,'SMTP host',253,enabled);
@@ -90,6 +92,7 @@ export async function saveNotificationSettings(input:Record<string,unknown>){
     await client.query(`INSERT INTO notification_settings(channel,encrypted_config) VALUES($1,$2)
       ON CONFLICT(channel) DO UPDATE SET encrypted_config=EXCLUDED.encrypted_config,updated_at=now()`,[channel,encrypt(channel,next)]);
     if(!next.enabled)await client.query("UPDATE deliveries SET status='canceled',last_error='Notification channel disabled' WHERE channel=$1 AND status='pending'",[channel]);
+    if(channel==='overview'||channel==='discord')await client.query('UPDATE overview_message SET next_attempt_at=now() WHERE id=true');
   });
-  return `${channel==='discord'?'Discord':'Email'} settings saved.`;
+  return `${channel==='discord'?'Discord':channel==='overview'?'Overview':'Email'} settings saved.`;
 }

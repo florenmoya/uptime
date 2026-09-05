@@ -15,7 +15,7 @@ test('supervised worker reacquires its lock and resumes after its database conne
   url.pathname=`/${database}`;
   const fixture=new pg.Client({connectionString:url.toString()});await fixture.connect();
   await fixture.query(await readFile(new URL('../db/schema.sql',import.meta.url),'utf8'));
-  const worker=spawn(process.execPath,['scripts/worker.mjs'],{windowsHide:true,stdio:'pipe',env:{...process.env,DATABASE_URL:url.toString()}});
+  const worker=spawn(process.execPath,['scripts/worker.mjs'],{windowsHide:true,stdio:'pipe',env:{...process.env,DATABASE_URL:url.toString(),DISCORD_WEBHOOK_URL:''}});
   let output='';worker.stderr.on('data',chunk=>output+=chunk);
   async function leader(except=0){
     for(let i=0;i<100;i++){

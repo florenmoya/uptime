@@ -64,6 +64,14 @@ MAIL_TO=you@your-domain.com
 
 Use `SMTP_SECURE=true` for port 465. SMTP STARTTLS is required on non-local plain connections. Comma-separated recipients are supported. Dashboard edits take effect immediately. Restart the dashboard and worker only after changing environment variables. A successful SMTP result means the receiving mail server accepted the message, not that a person read it. Without sender/recipient/provider details, email remains visibly unconfigured. Saved connections use AES-256-GCM encryption in PostgreSQL. Set `NOTIFICATION_ENCRYPTION_KEY` to a random 32-byte hex key in the private environment file, use the same key for every app instance sharing the database, and back it up separately from the database. Never commit the key or regenerate it over existing encrypted settings. The tests verify real SMTP delivery to an isolated local capture server; no mail credentials are needed for that test.
 
+## Discord overview
+
+**Settings → Discord overview** maintains one live Discord message with all services, current status, response time, observed 24-hour check results and coverage, and twelve five-minute history blocks. It refreshes every 60 seconds through the existing worker. It is enabled by default and uses the incident webhook unless a separate encrypted webhook is saved. It is independent of the automatic incident alert switch.
+
+The message ID is saved in PostgreSQL and reused across restarts. A Discord Unknown Message response recreates a deleted post; other errors retain the message ID and honor retry delays. If initial creation may have succeeded but Discord did not confirm it, automatic creation stops to avoid duplicates. Settings then allows entering the existing message ID or explicitly retrying creation. Disabling the overview stops updates and leaves its last message intact. Changing the destination creates a new overview there and leaves the previous message unchanged.
+
+For existing installations, apply `db/migrations/002-discord-overview.sql` as the database owner and grant the app role SELECT, INSERT, UPDATE, DELETE on `overview_message` before starting the new worker. No new environment key is required.
+
 ## Check and incident behavior
 
 - GET checks every 60 seconds; 10-second overall timeout; valid TLS; at most five redirects; healthy final response is HTTP 200–399.

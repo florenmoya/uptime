@@ -4,6 +4,45 @@ import { createServer } from 'node:http';
 import { SMTPServer } from 'smtp-server';
 import { sendDiscord,sendEmail } from '../src/lib/notifications.js';
 import {buildIncidentNotification,buildTestNotifications,renderEmail,notificationFields,TEST_SCENARIOS} from '../src/lib/notification-content.js';
+import {buildOverview,overviewHistory} from '../src/lib/overview-content.js';
+import {writeOverview,OverviewError} from '../src/lib/discord-overview.js';
+import type {MonitorView} from '../src/lib/dashboard.js';
+
+test('overview renders honest stale states, history gaps and observed-check percentages',()=>{
+  const now='2026-09-05T16:00:00.000Z';
+  const monitor={name:'FACT PROD',url:'https://example.com',enabled:true,status:'up',failures:0,successes:2,interval_seconds:60,last_checked_at:now,last_latency_ms:80,total:200,passed:199,coverage:48,history:[{minute:now,ok:true}]} as MonitorView;
+  const message=buildOverview([monitor],now,'https://uptime.example.com');
+  assert.match(message.embeds[0].description,/All 1 services operational/);
+  assert.match(message.embeds[0].fields[0].value,/99.50% · 48% coverage/);
+  assert.equal(overviewHistory(monitor,now),'⬜'.repeat(11)+'🟩');
+  assert.match(buildOverview([{...monitor,last_checked_at:'2026-09-05T15:00:00Z'}],now,'').embeds[0].fields[0].value,/No recent check/);
+  assert.equal(buildOverview([{...monitor,total:0}],now,'').embeds[0].fields[0].value.includes('24h checks: No data'),true);
+  assert.equal(buildOverview(Array.from({length:30},()=>monitor),now,'').embeds[0].fields.length,20);
+});
+
+test('overview transport creates once, edits by ID, and distinguishes deleted messages from invalid webhooks',async()=>{
+  let status=200;let result:Record<string,unknown>={id:'10000000001'};
+  const requests:{method?:string;path?:string;body:Record<string,unknown>}[]=[];
+  const server=createServer(async(req,res)=>{let body='';for await(const chunk of req)body+=chunk;requests.push({method:req.method,path:req.url,body:JSON.parse(body)});res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(result));});
+  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
+  try{
+    const webhook=`http://127.0.0.1:${(server.address() as {port:number}).port}/webhook`;
+    const payload=buildOverview([],'2026-09-05T16:00:00Z','https://uptime.example.com');
+    const id=await writeOverview(webhook,null,payload,true);
+    await writeOverview(webhook,id,payload,true);
+    assert.equal(requests[0].method,'POST');assert.equal(requests[0].path,'/webhook?wait=true');
+    assert.equal(requests[1].method,'PATCH');assert.equal(requests[1].path,'/webhook/messages/10000000001');
+    assert.deepEqual(requests[1].body.allowed_mentions,{parse:[]});
+    status=404;result={code:10008};
+    await assert.rejects(writeOverview(webhook,id,payload,true),(error:unknown)=>error instanceof OverviewError&&error.missingMessage);
+    result={code:10015};
+    await assert.rejects(writeOverview(webhook,id,payload,true),(error:unknown)=>error instanceof OverviewError&&!error.missingMessage);
+    status=429;result={retry_after:2.5};
+    await assert.rejects(writeOverview(webhook,id,payload,true),(error:unknown)=>error instanceof OverviewError&&error.retryMs===2500);
+    status=502;result={};
+    await assert.rejects(writeOverview(webhook,null,payload,true),(error:unknown)=>error instanceof OverviewError&&error.uncertain);
+  }finally{await new Promise<void>(resolve=>server.close(()=>resolve()));}
+});
 
 test('incident samples use the real templates, distinguish every supported scenario and escape email HTML',()=>{
   const monitor={name:'FACT <PROD>',url:'https://example.com/?q=<script>',project:'FACT',interval_seconds:60};

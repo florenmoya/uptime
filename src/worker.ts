@@ -2,6 +2,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { pool } from './lib/db';
 import { runDueChecks,cleanupHistory } from './lib/monitoring';
 import { dispatchPending } from './lib/notifications';
+import {refreshOverview} from './lib/discord-overview';
 
 const leader=await pool.connect();
 leader.on('error',()=>{console.error('Worker lock connection lost. Exiting so the supervisor can restart safely.');process.exit(1);});
@@ -15,6 +16,7 @@ try {
     try {
       await pool.query('INSERT INTO worker_health(id,heartbeat_at) VALUES(true,now()) ON CONFLICT(id) DO UPDATE SET heartbeat_at=now()');
       await Promise.all([runDueChecks(),dispatchPending()]);
+      await refreshOverview();
       if(Date.now()>cleanupAt){await cleanupHistory();cleanupAt=Date.now()+3600000;}
     }catch{console.error('Worker cycle failed. Database health will be retried; missing checks remain unknown.');}
     await delay(1000);

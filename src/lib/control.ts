@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID,createHash } from 'node:crypto';
 import { pool,transaction } from './db';
 import { validateTarget } from './probe';
 import { settings } from './config';
@@ -9,6 +9,21 @@ export class InputError extends Error{}
 function text(value:unknown,label:string,max:number) {if(typeof value!=='string'||!value.trim()||value.trim().length>max)throw new InputError(`${label} must contain 1–${max} characters.`);return value.trim();}
 
 export async function control(input:Record<string,unknown>):Promise<string> {
+  if(input.action==='overview.refresh'){
+    const result=await pool.query("UPDATE overview_message SET next_attempt_at=now() WHERE id=true AND NOT creation_pending AND last_error IS NULL AND (last_updated_at IS NULL OR last_updated_at<now()-interval '15 seconds')");
+    return result.rowCount?'Overview refresh queued.':'The overview was just updated or a retry is already scheduled.';
+  }
+  if(input.action==='overview.recover'){
+    if(input.messageId!==undefined&&(typeof input.messageId!=='string'||!/^\d{10,25}$/.test(input.messageId)))throw new InputError('Enter a valid Discord message ID.');
+    await transaction(async client=>{
+      await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
+      const config=await getNotificationSettings(client),webhook=config.overview.webhook||config.discord.webhook;
+      if(!webhook||!config.overview.enabled)throw new InputError('Configure and enable the overview first.');
+      const result=await client.query('UPDATE overview_message SET message_id=$1,webhook_hash=$2,creation_pending=false,last_error=NULL,next_attempt_at=now() WHERE id=true AND creation_pending AND last_error IS NOT NULL',[input.messageId??null,createHash('sha256').update(webhook).digest('hex')]);
+      if(!result.rowCount)throw new InputError('Overview creation does not need recovery.');
+    });
+    return 'Overview recovery queued.';
+  }
   if(input.action==='notifications.save'){
     try{return await saveNotificationSettings(input);}catch(error){if(error instanceof NotificationSettingsError)throw new InputError(error.message);throw error;}
   }

@@ -94,7 +94,17 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   attempts integer NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS notification_settings (
-  channel text PRIMARY KEY CHECK (channel IN ('discord','email')),
+  channel text PRIMARY KEY CHECK (channel IN ('discord','email','overview')),
   encrypted_config text NOT NULL,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS overview_message (
+  id boolean PRIMARY KEY DEFAULT true CHECK(id),
+  message_id text,
+  webhook_hash text,
+  creation_pending boolean NOT NULL DEFAULT false,
+  last_updated_at timestamptz,
+  next_attempt_at timestamptz NOT NULL DEFAULT now(),
+  last_error text
+);
+INSERT INTO overview_message(id) VALUES(true) ON CONFLICT DO NOTHING;
