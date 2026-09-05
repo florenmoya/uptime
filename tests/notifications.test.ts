@@ -14,7 +14,10 @@ test('overview renders honest stale states, history gaps and observed-check perc
   const message=buildOverview([monitor],now,'https://uptime.example.com');
   assert.match(message.embeds[0].description,/All 1 services operational/);
   assert.match(message.embeds[0].fields[0].value,/99.50% · 48% coverage/);
-  assert.equal(overviewHistory(monitor,now),Array(11).fill('⬜').concat('🟩').join(' '));
+  assert.equal(overviewHistory(monitor,now),Array(5).fill('⬜').concat('🟩').join(' '));
+  assert.equal(overviewHistory({...monitor,history:[{minute:'2026-09-05T15:01:00Z',ok:true},{minute:'2026-09-05T15:11:00Z',ok:false},{minute:now,ok:true}]},now),'🟩 🟥 ⬜ ⬜ ⬜ 🟩');
+  assert.equal(overviewHistory({...monitor,history:[...monitor.history,{minute:'2026-09-05T15:55:00Z',ok:false}]},now),'⬜ ⬜ ⬜ ⬜ ⬜ 🟥');
+  assert.ok(message.embeds[0].footer.text.includes('10 min/block'));
   assert.match(buildOverview([{...monitor,last_checked_at:'2026-09-05T15:00:00Z'}],now,'').embeds[0].fields[0].value,/No recent check/);
   assert.equal(buildOverview([{...monitor,total:0}],now,'').embeds[0].fields[0].value.includes('24h checks: No data'),true);
   assert.equal(buildOverview(Array.from({length:30},()=>monitor),now,'').embeds[0].fields.length,20);

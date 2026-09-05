@@ -5,8 +5,8 @@ const symbols:Record<string,string>={up:'🟢',down:'🔴',checking:'🟡',unkno
 function plain(value:string){return value.replace(/[\\`*_~|<>\[\]@]/g,'').slice(0,120);}
 export function overviewHistory(monitor:MonitorView,now:string){
   const end=Math.floor(Date.parse(now)/60000)*60000+60000,start=end-3600000;
-  return Array.from({length:12},(_,i)=>{
-    const checks=monitor.history.filter(h=>Date.parse(h.minute)>=start+i*300000&&Date.parse(h.minute)<start+(i+1)*300000);
+  return Array.from({length:6},(_,i)=>{
+    const checks=monitor.history.filter(h=>Date.parse(h.minute)>=start+i*600000&&Date.parse(h.minute)<start+(i+1)*600000);
     return checks.some(h=>!h.ok)?'🟥':checks.length?'🟩':'⬜';
   }).join(' ');
 }
@@ -20,5 +20,5 @@ export function buildOverview(monitors:MonitorView[],now:string,dashboardUrl:str
     return {name:`${symbols[state.key]??'⚪'}\u2002${plain(monitor.name)}`,value:`${state.label}${response}\n24h checks: ${passed} · ${monitor.coverage}% coverage\n${overviewHistory(monitor,now)}\n\u200b`,inline:false};
   });
   const updated=new Intl.DateTimeFormat('en-PH',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Manila'}).format(new Date(now));
-  return {username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{title:'📡 Service overview',url:dashboardUrl,color:down?0xb3293e:healthy===monitors.length?0x17734d:0xa56916,description:headline+(monitors.length>20?`\nShowing 20 of ${monitors.length} services; open the dashboard for all.`:''),fields,footer:{text:`Past hour · 5 min/block · 🟩 Passed · 🟥 Failed · ⬜ No data\nUpdated ${updated} PHT`}}]};
+  return {username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{title:'📡 Service overview',url:dashboardUrl,color:down?0xb3293e:healthy===monitors.length?0x17734d:0xa56916,description:headline+(monitors.length>20?`\nShowing 20 of ${monitors.length} services; open the dashboard for all.`:''),fields,footer:{text:`Past hour · 10 min/block · 🟩 Passed · 🟥 Failed · ⬜ No data\nUpdated ${updated} PHT`}}]};
 }
