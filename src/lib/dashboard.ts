@@ -1,14 +1,15 @@
 import { pool } from './db';
-import { channelConfig,settings } from './config';
+import { settings } from './config';
+import {getNotificationSettings,notificationReadiness,notificationSettingsView,type NotificationSettingsView} from './notification-settings';
 
 export type MonitorView={id:string;name:string;project:string;url:string|null;enabled:boolean;status:string;failures:number;successes:number;interval_seconds:number;last_checked_at:string|null;last_http_status:number|null;last_latency_ms:number|null;last_error:string|null;created_at:string;total:number;passed:number;coverage:number;history:{minute:string;ok:boolean}[];recent:{checked_at:string;ok:boolean;latency_ms:number;http_status:number|null;error:string|null}[]};
 export type IncidentView={id:string;monitor_id:string;name:string;started_at:string;resolved_at:string|null;reason:string;resolution:string|null};
 export type DeliveryView={id:string;channel:'discord'|'email';status:string;attempts:number;last_error:string|null;created_at:string;sent_at:string|null;payload:{title:string;kind:string}};
 export type StatusPageView={id:string;slug:string;title:string;description:string;published:boolean;monitorIds:string[];updatedAt:string};
-export type DashboardData={monitors:MonitorView[];incidents:IncidentView[];deliveries:DeliveryView[];statusPages:StatusPageView[];worker:{heartbeat_at:string;started_at:string}|null;config:{discord:boolean;email:boolean;alertsEnabled:boolean;probeLabel:string;mailRecipients:number};now:string};
+export type DashboardData={monitors:MonitorView[];incidents:IncidentView[];deliveries:DeliveryView[];statusPages:StatusPageView[];worker:{heartbeat_at:string;started_at:string}|null;config:{discord:boolean;email:boolean;alertsEnabled:boolean;probeLabel:string;mailRecipients:number;notifications:NotificationSettingsView};now:string};
 
 export async function getDashboard():Promise<DashboardData> {
-  const [monitors,incidents,deliveries,statusPages,worker,app]=await Promise.all([
+  const [monitors,incidents,deliveries,statusPages,worker,app,notifications]=await Promise.all([
     pool.query(`SELECT m.*,
       (SELECT count(*)::int FROM checks c WHERE c.monitor_id=m.id AND c.target_url=m.url AND c.checked_at>now()-interval '24 hours') AS total,
       (SELECT count(*)::int FROM checks c WHERE c.monitor_id=m.id AND c.target_url=m.url AND c.ok AND c.checked_at>now()-interval '24 hours') AS passed,
@@ -24,6 +25,7 @@ export async function getDashboard():Promise<DashboardData> {
       GROUP BY sp.id ORDER BY sp.created_at,sp.id`),
     pool.query('SELECT heartbeat_at,started_at FROM worker_health WHERE id=true'),
     pool.query('SELECT alerts_enabled FROM app_settings WHERE id=true'),
+    getNotificationSettings(),
   ]);
   const config=settings();
   return JSON.parse(JSON.stringify({
@@ -32,6 +34,6 @@ export async function getDashboard():Promise<DashboardData> {
       return {...m,coverage:Math.min(100,Math.round(m.covered_minutes/elapsed*100))};
     }),
     incidents:incidents.rows,deliveries:deliveries.rows,statusPages:statusPages.rows.map(p=>({id:p.id,slug:p.slug,title:p.title,description:p.description,published:p.published,monitorIds:p.monitor_ids,updatedAt:p.updated_at})),worker:worker.rows[0]??null,
-    config:{...channelConfig(),alertsEnabled:app.rows[0]?.alerts_enabled??false,probeLabel:config.probeLabel,mailRecipients:config.mailTo.length},now:new Date().toISOString(),
+    config:{...notificationReadiness(notifications),alertsEnabled:app.rows[0]?.alerts_enabled??false,probeLabel:config.probeLabel,mailRecipients:notifications.email.to.length,notifications:notificationSettingsView(notifications)},now:new Date().toISOString(),
   }));
 }

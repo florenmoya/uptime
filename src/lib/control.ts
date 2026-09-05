@@ -1,13 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { pool,transaction } from './db';
 import { validateTarget } from './probe';
-import { channelConfig,settings } from './config';
+import { settings } from './config';
+import {getNotificationSettings,notificationReadiness,saveNotificationSettings,NotificationSettingsError} from './notification-settings';
 import { buildTestNotifications,TEST_SCENARIOS,type TestScenario } from './notification-content';
 
 export class InputError extends Error{}
 function text(value:unknown,label:string,max:number) {if(typeof value!=='string'||!value.trim()||value.trim().length>max)throw new InputError(`${label} must contain 1–${max} characters.`);return value.trim();}
 
 export async function control(input:Record<string,unknown>):Promise<string> {
+  if(input.action==='notifications.save'){
+    try{return await saveNotificationSettings(input);}catch(error){if(error instanceof NotificationSettingsError)throw new InputError(error.message);throw error;}
+  }
   if(input.action==='status-page.save'){
     const title=text(input.title,'Title',100);
     const slug=typeof input.slug==='string'?input.slug.trim():'';
@@ -55,12 +59,12 @@ export async function control(input:Record<string,unknown>):Promise<string> {
   if(input.action==='test'){
     const channel=input.channel;
     if(channel!=='discord'&&channel!=='email')throw new InputError('Choose Discord or email.');
-    if(!channelConfig()[channel])throw new InputError(`Configure ${channel==='email'?'SMTP, sender and recipient addresses':'the Discord webhook'} first.`);
     const scenario=input.scenario??'http';
     if(scenario!=='all'&&!TEST_SCENARIOS.some(s=>s.id===scenario))throw new InputError('Choose a valid test scenario.');
     const monitorId=text(input.monitorId,'Monitor',80);
     return transaction(async client=>{
       await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
+      if(!notificationReadiness(await getNotificationSettings(client))[channel])throw new InputError(`Configure and enable ${channel==='email'?'email':'Discord'} first.`);
       const monitor=(await client.query('SELECT name,url,project,interval_seconds FROM monitors WHERE id=$1 AND url IS NOT NULL',[monitorId])).rows[0];
       if(!monitor)throw new InputError('Choose a monitor with a target URL.');
       const recent=await client.query("SELECT 1 FROM deliveries WHERE channel=$1 AND (payload->>'kind'='test' OR payload->>'isTest'='true') AND created_at>now()-interval '1 minute'",[channel]);

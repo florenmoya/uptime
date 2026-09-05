@@ -17,7 +17,3 @@ export function settings() {
     mailTo:(process.env.MAIL_TO ?? '').split(',').map(s=>s.trim()).filter(Boolean),
   };
 }
-export function channelConfig() {
-  const s=settings();
-  return {discord:Boolean(s.discordWebhook),email:Boolean(s.smtpHost&&s.mailFrom&&s.mailTo.length)};
-}

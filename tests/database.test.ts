@@ -75,6 +75,38 @@ test('real PostgreSQL atomically persists incidents and deduplicated outbox tran
     await assert.rejects(control({action:'test',channel:'discord',monitorId:'fixture',scenario:'recovered'}),/last minute/);
     await control({action:'alerts',enabled:false});
     assert.equal((await pool.query("SELECT count(*)::int AS count FROM deliveries WHERE payload->>'isTest'='true' AND status='pending'")).rows[0].count,8,'pausing real alerts must preserve requested tests');
+    process.env.NOTIFICATION_ENCRYPTION_KEY='ab'.repeat(32);
+    const {getNotificationSettings,notificationSettingsView,notificationReadiness}=await import('../src/lib/notification-settings.js');
+    const {getDashboard}=await import('../src/lib/dashboard.js');
+    const replacementWebhook='https://discord.com/api/webhooks/456/replacement_fixture_secret';
+    await assert.rejects(control({action:'notifications.save',channel:'discord',enabled:true,webhook:'https://example.com/webhook'}),/Discord webhook/);
+    await control({action:'notifications.save',channel:'discord',enabled:true,webhook:replacementWebhook});
+    await control({action:'notifications.save',channel:'discord',enabled:true,webhook:''});
+    assert.equal((await getNotificationSettings()).discord.webhook,replacementWebhook,'blank webhook retains the saved value');
+    const emailInput={action:'notifications.save',channel:'email',enabled:true,host:'smtp.example.com',port:587,user:'sender@example.com',password:'fixture-smtp-secret',from:'Uptime <sender@example.com>',to:'owner@example.com'};
+    await assert.rejects(control({...emailInput,host:'127.0.0.1'}),/SMTP hostname/);
+    await assert.rejects(control({...emailInput,to:'not-an-email'}),/email addresses/);
+    await control(emailInput);
+    await control({...emailInput,password:'',to:'second@example.com',port:465});
+    const savedSettings=await getNotificationSettings();
+    assert.equal(savedSettings.email.password,'fixture-smtp-secret','blank password retains the saved secret');
+    assert.deepEqual(savedSettings.email.to,['second@example.com'],'configuration is read fresh after save');
+    assert.equal(savedSettings.email.secure,true,'port 465 uses implicit TLS');
+    const ciphertext=JSON.stringify((await pool.query('SELECT * FROM notification_settings')).rows);
+    assert.equal(ciphertext.includes('fixture-smtp-secret'),false);
+    assert.equal(ciphertext.includes(replacementWebhook),false);
+    for(const visible of [notificationSettingsView(savedSettings),(await getDashboard()).config]){
+      const json=JSON.stringify(visible);
+      assert.equal(json.includes('fixture-smtp-secret'),false);
+      assert.equal(json.includes(replacementWebhook),false);
+    }
+    process.env.NOTIFICATION_ENCRYPTION_KEY='cd'.repeat(32);
+    await assert.rejects(getNotificationSettings(),'wrong encryption keys must fail closed');
+    process.env.NOTIFICATION_ENCRYPTION_KEY='ab'.repeat(32);
+    await control({action:'notifications.save',channel:'discord',enabled:false,webhook:''});
+    assert.equal(notificationReadiness(await getNotificationSettings()).discord,false,'disabled settings override environment fallback');
+    assert.equal((await pool.query("SELECT count(*)::int AS count FROM deliveries WHERE channel='discord' AND status='pending'")).rows[0].count,0);
+    await assert.rejects(control({action:'test',channel:'discord',monitorId:'fixture'}),/enable Discord/);
     assert.equal(JSON.stringify(publicPage).includes('example.com'),false,'public data must not expose monitor target URLs');
     await control({action:'status-page.save',id:publicPage?.id,title:'Public fixture status',slug:'fixture-status',description:'Public health only.',published:false,monitorIds:['fixture']});
     assert.equal(await getPublicPage('fixture-status'),null,'unpublished pages are inaccessible');

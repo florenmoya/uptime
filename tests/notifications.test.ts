@@ -75,7 +75,7 @@ test('email reaches a local SMTP receiver with actual subject and recipient',asy
   await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
   try {
     const port=(server.server.address() as {port:number}).port;
-    await sendEmail(payload,{host:'127.0.0.1',port,secure:false,user:'',password:'',from:'uptime@localhost.test',to:['owner@localhost.test']});
+    await sendEmail(payload,{host:'127.0.0.1',port,secure:false,user:'',password:'',from:'uptime@localhost.test',to:['owner@localhost.test']},true);
     assert.deepEqual(recipients,['owner@localhost.test']);assert.match(message,/Subject: Local verification/);
     assert.match(message,/Fixture alert/);
   }finally {await new Promise<void>(resolve=>server.close(()=>resolve()));}

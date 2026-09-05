@@ -1,10 +1,11 @@
 import { pool,transaction } from './db';
-import { channelConfig,settings } from './config';
+import { settings } from './config';
+import {getNotificationSettings,notificationReadiness} from './notification-settings';
 import { transition,type Status } from './state';
 import { probe,type ProbeResult } from './probe';
 import { buildIncidentNotification } from './notification-content';
 
-export async function recordObservation(id:string,scheduledAt:Date,version:number,result:ProbeResult,channels=channelConfig()):Promise<boolean> {
+export async function recordObservation(id:string,scheduledAt:Date,version:number,result:ProbeResult,channels?:{discord:boolean;email:boolean}):Promise<boolean> {
   return transaction(async client=>{
     const found=await client.query('SELECT * FROM monitors WHERE id=$1 FOR UPDATE',[id]);
     const monitor=found.rows[0];
@@ -32,8 +33,9 @@ export async function recordObservation(id:string,scheduledAt:Date,version:numbe
     }
     const enabled=await client.query('SELECT alerts_enabled FROM app_settings WHERE id=true');
     if(enabled.rows[0]?.alerts_enabled) {
+      const activeChannels=channels??notificationReadiness(await getNotificationSettings(client));
       const payload=buildIncidentNotification({monitor,kind:event,occurredAt,startedAt,incidentId:String(incidentId),result,dashboardUrl:settings().appUrl});
-      for(const channel of ['discord','email'] as const) if(channels[channel]) await client.query('INSERT INTO deliveries(incident_id,event_key,channel,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[incidentId,`${incidentId}:${event}`,channel,JSON.stringify(payload)]);
+      for(const channel of ['discord','email'] as const) if(activeChannels[channel]) await client.query('INSERT INTO deliveries(incident_id,event_key,channel,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[incidentId,`${incidentId}:${event}`,channel,JSON.stringify(payload)]);
     }
     return true;
   });

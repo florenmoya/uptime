@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
-import { settings } from './config';
+import {lookup} from 'node:dns/promises';
+import {isPublicAddress} from './probe';
+import {getNotificationSettings,notificationReadiness} from './notification-settings';
 import { pool } from './db';
 
 import {notificationFields,notificationColor,renderEmail,testNotice,type NotificationPayload} from './notification-content';
@@ -7,7 +9,8 @@ export type {NotificationPayload} from './notification-content';
 export class DeliveryError extends Error {
   constructor(message:string,public retryAfterMs=0,public permanent=false){super(message);}
 }
-export async function sendDiscord(payload:NotificationPayload,webhook=settings().discordWebhook,allowLocalForTest=false):Promise<string> {
+export async function sendDiscord(payload:NotificationPayload,webhook?:string,allowLocalForTest=false):Promise<string> {
+  webhook??=(await getNotificationSettings()).discord.webhook;
   const url=new URL(webhook);
   if(!allowLocalForTest&&(url.protocol!=='https:'||url.hostname!=='discord.com'||!/^\/api\/webhooks\/\d+\/[^/]+$/.test(url.pathname))) throw new DeliveryError('Discord webhook configuration is invalid.',0,true);
   url.searchParams.set('wait','true');
@@ -30,11 +33,20 @@ export async function sendDiscord(payload:NotificationPayload,webhook=settings()
   return body.id;
 }
 type SmtpConfig={host:string;port:number;secure:boolean;user:string;password:string;from:string;to:string[]};
-export async function sendEmail(payload:NotificationPayload,config?:SmtpConfig):Promise<string> {
-  const s=settings();
-  const c=config??{host:s.smtpHost,port:s.smtpPort,secure:s.smtpSecure,user:s.smtpUser,password:s.smtpPassword,from:s.mailFrom,to:s.mailTo};
+export async function createMailTransport(c:SmtpConfig,allowLocalForTest=false){
   if(!c.host||!c.from||!c.to.length) throw new DeliveryError('Email needs SMTP, a sender and recipients.',0,true);
-  const transporter=nodemailer.createTransport({host:c.host,port:c.port,secure:c.secure,auth:c.user?{user:c.user,pass:c.password}:undefined,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,requireTLS:!c.secure&&c.host!=='127.0.0.1'&&c.host!=='localhost'});
+  const localFixture=allowLocalForTest&&(c.host==='127.0.0.1'||c.host==='localhost');
+  let host=c.host;
+  if(!localFixture){
+    let addresses;try{addresses=await lookup(c.host,{all:true});}catch{throw new DeliveryError('SMTP hostname could not be resolved.');}
+    if(!addresses.length||addresses.some(a=>!isPublicAddress(a.address)))throw new DeliveryError('SMTP must use a public mail server.',0,true);
+    host=addresses[0].address;
+  }
+  return nodemailer.createTransport({host,port:c.port,secure:c.secure,tls:localFixture?undefined:{servername:c.host},auth:c.user?{user:c.user,pass:c.password}:undefined,connectionTimeout:10000,greetingTimeout:10000,socketTimeout:15000,requireTLS:!c.secure&&!localFixture});
+}
+export async function sendEmail(payload:NotificationPayload,config?:SmtpConfig,allowLocalForTest=false):Promise<string> {
+  const c=config??(await getNotificationSettings()).email;
+  const transporter=await createMailTransport(c,allowLocalForTest);
   try {
     const info=await transporter.sendMail({from:c.from,to:c.to,subject:payload.title,...renderEmail(payload),disableFileAccess:true,disableUrlAccess:true});
     if(info.rejected?.length) throw new DeliveryError('The mail server rejected one or more recipients.',0,true);
@@ -49,9 +61,14 @@ export async function dispatchPending():Promise<number> {
   const due=await pool.query(`SELECT d.* FROM deliveries d WHERE d.status='pending' AND d.next_attempt_at<=now()
     AND NOT EXISTS(SELECT 1 FROM deliveries older WHERE older.incident_id=d.incident_id AND older.channel=d.channel AND older.id<d.id AND older.status='pending')
     ORDER BY d.id LIMIT 12`);
+  if(!due.rowCount)return 0;
+  const config=await getNotificationSettings(),ready=notificationReadiness(config);
   await Promise.all(due.rows.map(async delivery=>{
     try {
-      const providerId=delivery.channel==='discord'?await sendDiscord(delivery.payload):await sendEmail(delivery.payload);
+      if(!ready[delivery.channel as 'discord'|'email']){
+        await pool.query("UPDATE deliveries SET status='canceled',last_error='Notification channel disabled' WHERE id=$1",[delivery.id]);return;
+      }
+      const providerId=delivery.channel==='discord'?await sendDiscord(delivery.payload,config.discord.webhook):await sendEmail(delivery.payload,config.email);
       await pool.query("UPDATE deliveries SET status='sent',attempts=attempts+1,sent_at=now(),provider_id=$2,last_error=NULL WHERE id=$1",[delivery.id,providerId]);
     }catch(error) {
       const failure=error instanceof DeliveryError?error:new DeliveryError('Delivery failed; see provider configuration.');

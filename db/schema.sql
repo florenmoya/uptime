@@ -93,3 +93,8 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   window_started_at timestamptz NOT NULL DEFAULT now(),
   attempts integer NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS notification_settings (
+  channel text PRIMARY KEY CHECK (channel IN ('discord','email')),
+  encrypted_config text NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);

@@ -46,7 +46,9 @@ Automatic alerts start paused for local setup. **Settings** shows channel readin
 
 In **Settings → Test notifications**, select a monitor and preview an HTTP error, timeout, DNS error, TLS certificate error, connection error, redirect error, invalid target, or recovery. Choose **All 8 scenarios** to send a batch, spaced three seconds apart. Samples use the same templates as real alerts, marked `[TEST]`, without checking the target or changing monitor health or incidents. Alerts show a status emoji, service name, failure reason or recovery message, URL, and Philippine time. Recoveries also show downtime. Discord uses colored embeds; email includes formatted HTML and a plain-text alternative.
 
-Set `DISCORD_WEBHOOK_URL` only in `.env.local`. Discord receives embeds from **Mang Tani**, with mentions disabled. The webhook uses the Mang Tani name and the owner-provided `tani.webp` profile photo, stored by Discord. `wait=true` requires a provider message receipt; the database records acceptance. Do not put the webhook into client code or commit it.
+Use **Settings → Edit Discord** to replace the webhook, or **Edit Email** to change SMTP, sender, and recipients. Leave a secret field blank to keep its saved value. Each channel can be disabled independently. Changes apply to subsequent deliveries without a restart; an in-progress send may finish using its previous connection. Existing environment values are used until a channel is first saved in Settings. Saved channel settings override those values, including when disabled. Passwords and webhook URLs are never returned to the browser. The Test notifications controls verify delivery after saving.
+
+For initial setup, set `DISCORD_WEBHOOK_URL` only in `.env.local`. Discord receives embeds from **Mang Tani**, with mentions disabled. The webhook uses the Mang Tani name and the owner-provided `tani.webp` profile photo, stored by Discord. `wait=true` requires a provider message receipt; the database records acceptance. Do not put the webhook into client code or commit it.
 
 For real email, configure:
 
@@ -60,7 +62,7 @@ MAIL_FROM=Uptime <alerts@your-domain.com>
 MAIL_TO=you@your-domain.com
 ```
 
-Use `SMTP_SECURE=true` for port 465. SMTP STARTTLS is required on non-local plain connections. Comma-separated recipients are supported. Restart the dashboard and worker after changing environment variables. A successful SMTP result means the receiving mail server accepted the message, not that a person read it. Without sender/recipient/provider details, email remains visibly unconfigured. The tests verify real SMTP delivery to an isolated local capture server; no mail credentials are needed for that test.
+Use `SMTP_SECURE=true` for port 465. SMTP STARTTLS is required on non-local plain connections. Comma-separated recipients are supported. Dashboard edits take effect immediately. Restart the dashboard and worker only after changing environment variables. A successful SMTP result means the receiving mail server accepted the message, not that a person read it. Without sender/recipient/provider details, email remains visibly unconfigured. Saved connections use AES-256-GCM encryption in PostgreSQL. Set `NOTIFICATION_ENCRYPTION_KEY` to a random 32-byte hex key in the private environment file, use the same key for every app instance sharing the database, and back it up separately from the database. Never commit the key or regenerate it over existing encrypted settings. The tests verify real SMTP delivery to an isolated local capture server; no mail credentials are needed for that test.
 
 ## Check and incident behavior
 
@@ -91,6 +93,8 @@ The dedicated `uptime` OS user runs `uptime-web.service` and `uptime-worker.serv
 Production credentials live in `/opt/uptime/shared/.env.local`, owned by uptime with mode 600, symlinked into each release. Configure `APP_URL=https://uptime.bayanko.ph`, the existing admin account, a session secret, notification credentials, and the dedicated RDS database. The production application role has access only to this application's schema objects, with no role or database creation permission. Keep verified TLS and the committed public AWS CA bundle.
 
 Deploy the exact committed source archive to a new release directory. Run `npm ci --no-audit --no-fund` and `NODE_OPTIONS=--max-old-space-size=384 npm run build` using the isolated runtime. Next builds use one worker to limit memory on this shared VM. Do not run the database seed/setup script on an existing production database as part of a routine UI deployment.
+
+For the editable notification settings release, apply `db/migrations/001-notification-settings.sql` as the database owner and grant the existing application role SELECT, INSERT, UPDATE, DELETE on `notification_settings`. Configure the encryption key before starting the updated services. This migration adds a table without modifying existing monitor data.
 
 Switch `current` only after a successful build. Restart the two uptime services, then verify `systemctl is-active uptime-web uptime-worker`, `/api/health`, public `/status/philgeps`, and private login/logout. Run only one checker against this database; stop the local checker before starting the VM checker. The advisory lock is the final duplicate-worker guard.
 

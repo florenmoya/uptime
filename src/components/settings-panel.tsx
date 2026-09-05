@@ -4,6 +4,7 @@ import type { DashboardData } from '@/lib/dashboard';
 import { timestamp,type Action } from './format';
 import PublicPages from './public-pages';
 import NotificationTests from './notification-tests';
+import NotificationConnections from './notification-connections';
 
 export function DeliveryHistory({data}:{data:DashboardData}){
   return <section className="section-block"><h2>Delivery history</h2><p className="section-description">Sent means the provider accepted the message.</p>
@@ -13,9 +14,7 @@ export function DeliveryHistory({data}:{data:DashboardData}){
 export default function SettingsPanel({data,action,busy}:{data:DashboardData;action:Action;busy:boolean}){
   return <div className="settings-content"><section className="section-block"><h2>Notifications</h2><p className="section-description">Receive one alert when an outage is confirmed, and one when the site recovers.</p>
     <div className="alert-switch"><div><Bell size={20}/><div><h3>Automatic incident alerts</h3><p>{data.config.alertsEnabled?'Enabled for future outage and recovery events.':'Paused. Test messages can still be sent.'}</p></div></div><button role="switch" aria-checked={data.config.alertsEnabled} aria-label="Automatic incident alerts" className={`switch ${data.config.alertsEnabled?'on':''}`} disabled={busy} onClick={()=>action({action:'alerts',enabled:!data.config.alertsEnabled})}><span/></button></div>
-    <div className="channel-row"><MessageSquare size={22}/><div><h3>Discord <span className={`connection-label ${data.config.discord?'connected':''}`}>{data.config.discord?'Configured':'Not configured'}</span></h3>{!data.config.discord&&<p>Set DISCORD_WEBHOOK_URL in .env.local.</p>}</div></div>
-    <div className="channel-row"><Mail size={22}/><div><h3>Email <span className={`connection-label ${data.config.email?'connected':''}`}>{data.config.email?'Configured':'Setup needed'}</span></h3><p>{data.config.email?`${data.config.mailRecipients} recipient${data.config.mailRecipients===1?'':'s'} configured through SMTP.`:'Add an SMTP server, sender, and recipient in .env.local.'}</p></div></div>
-    {!data.config.email&&<details className="email-guide"><summary>Email setup instructions</summary><p>Use your mail provider’s SMTP credentials. Fill these fields in the project’s <code>.env.local</code>, then restart the web app and worker.</p><pre>{'SMTP_HOST=smtp.your-provider.com\nSMTP_PORT=587\nSMTP_SECURE=false\nSMTP_USER=your-smtp-user\nSMTP_PASSWORD=your-smtp-password\nMAIL_FROM=Uptime <alerts@your-domain.com>\nMAIL_TO=you@your-domain.com'}</pre><p>Separate multiple recipients with commas. Port 465 uses <code>SMTP_SECURE=true</code>. Credentials never appear in the dashboard.</p></details>}
+    <NotificationConnections settings={data.config.notifications} action={action} busy={busy}/>
     <NotificationTests data={data} action={action} busy={busy}/>
   </section>
   <PublicPages data={data} action={action} busy={busy}/>
