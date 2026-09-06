@@ -10,7 +10,8 @@ export function overviewHistory(monitor:MonitorView,now:string){
     return checks.some(h=>!h.ok)?'🟥':checks.length?'🟩':'⬜';
   }).join(' ');
 }
-export function buildOverview(monitors:MonitorView[],now:string,dashboardUrl:string){
+export function buildOverview(monitors:MonitorView[],now:string,appUrl:string){
+  const statusUrl=appUrl?new URL('/status/philgeps',appUrl).toString():'';
   const states=monitors.map(m=>statusOf(m,now));
   const healthy=states.filter(s=>s.key==='up').length,down=states.filter(s=>s.key==='down').length;
   const headline=!monitors.length?'No monitors configured':healthy===monitors.length?`✅ All ${healthy} services operational`:`🟢 ${healthy} operational · 🔴 ${down} down · ⚪ ${monitors.length-healthy-down} other`;
@@ -20,5 +21,5 @@ export function buildOverview(monitors:MonitorView[],now:string,dashboardUrl:str
     return {name:`${symbols[state.key]??'⚪'}\u2002${plain(monitor.name)}`,value:`${state.label}${response}\n24h checks: ${passed}\n${overviewHistory(monitor,now)}\n\u200b`,inline:false};
   });
   const updated=new Intl.DateTimeFormat('en-PH',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Manila'}).format(new Date(now));
-  return {username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{title:'📡 Service overview',url:dashboardUrl,color:down?0xb3293e:healthy===monitors.length?0x17734d:0xa56916,description:headline+(monitors.length>20?`\nShowing 20 of ${monitors.length} services; open the dashboard for all.`:''),fields,footer:{text:`Past hour · 10 min/block · 🟩 Passed · 🟥 Failed · ⬜ No data\nUpdated ${updated} PHT`}}]};
+  return {username:'Mang Tani',allowed_mentions:{parse:[]},embeds:[{title:'📡 Service overview',url:statusUrl,color:down?0xb3293e:healthy===monitors.length?0x17734d:0xa56916,description:headline+(monitors.length>20?`\nShowing 20 of ${monitors.length} services.`:''),fields,footer:{text:`Past hour · 10 min/block · 🟩 Passed · 🟥 Failed · ⬜ No data\nUpdated ${updated} PHT`}}]};
 }
