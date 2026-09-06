@@ -9,6 +9,20 @@ export class InputError extends Error{}
 function text(value:unknown,label:string,max:number) {if(typeof value!=='string'||!value.trim()||value.trim().length>max)throw new InputError(`${label} must contain 1–${max} characters.`);return value.trim();}
 
 export async function control(input:Record<string,unknown>):Promise<string> {
+  if(input.action==='monitors.create'){
+    const name=text(input.name,'Name',120),project=text(input.project,'Project',60),raw=text(input.url,'URL',2000);
+    let url:string;
+    try{url=validateTarget(raw);}catch(error){throw new InputError(error instanceof Error?error.message:'Invalid URL.');}
+    if(url.length>2000)throw new InputError('The target URL is too long.');
+    await transaction(async client=>{
+      // Share the ordering lock so a creation cannot race with a saved order.
+      await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
+      if((await client.query('SELECT id FROM monitors WHERE url=$1',[url])).rowCount)throw new InputError('This URL already has a monitor.');
+      await client.query('INSERT INTO monitors(id,name,project,url) VALUES($1,$2,$3,$4)',[randomUUID(),name,project,url]);
+      await client.query('UPDATE overview_message SET next_attempt_at=now() WHERE id=true AND NOT creation_pending AND last_error IS NULL');
+    });
+    return 'Monitor added. Its first check is queued.';
+  }
   if(input.action==='monitors.reorder'){
     if(!Array.isArray(input.monitorIds)||input.monitorIds.length<1||input.monitorIds.length>100||input.monitorIds.some(id=>typeof id!=='string'||!id.length||id.length>80))throw new InputError('Choose a valid monitor order.');
     const ids=input.monitorIds as string[];

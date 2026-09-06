@@ -1,16 +1,18 @@
 'use client';
 import { useCallback,useEffect,useState } from 'react';
-import { Activity,ArrowUpRight,Check,CheckCircle2,CircleHelp,Clock3,RefreshCw,Search,Settings2,TriangleAlert,X } from 'lucide-react';
+import { Activity,ArrowUpRight,Check,CheckCircle2,CircleHelp,Clock3,Plus,RefreshCw,Search,Settings2,TriangleAlert,X } from 'lucide-react';
 import type { DashboardData } from '@/lib/dashboard';
 import MonitorRow from './monitor-row';
 import SettingsPanel from './settings-panel';
 import LogoutButton from './logout-button';
+import AddMonitor from './add-monitor';
 import { relative,statusOf,timestamp } from './format';
 
 export default function Dashboard({initial}:{initial:DashboardData}){
   const [snapshot,setData]=useState(initial),[now,setNow]=useState(initial.now),[tab,setTab]=useState<'monitors'|'incidents'|'settings'>('monitors');
   const data={...snapshot,now};
   const [search,setSearch]=useState(''),[filter,setFilter]=useState('all'),[busy,setBusy]=useState(false);
+  const [adding,setAdding]=useState(false);
   const [notice,setNotice]=useState<{text:string;error:boolean}|null>(null),[connectionError,setConnectionError]=useState(false);
   const refresh=useCallback(async()=>{
     try{const response=await fetch('/api/dashboard',{cache:'no-store'});if(response.status===401){window.location.assign('/login');return;}if(!response.ok)throw new Error();setData(await response.json());setConnectionError(false);}catch{setConnectionError(true);}
@@ -35,11 +37,12 @@ export default function Dashboard({initial}:{initial:DashboardData}){
     <header className="app-header"><div className="header-inner"><a href="/" className="brand"><span className="brand-symbol"><Activity size={23}/></span><span>bayanko<span className="brand-product">uptime</span></span></a><div className="header-meta"><span className={`worker-indicator ${workerAlive?'online':'offline'}`}><span/>{workerAlive?'Checker running':'Checker offline'}</span><LogoutButton/></div></div></header>
     <div className="page-container"><nav className="main-nav" aria-label="Main navigation">{(['monitors','incidents','settings'] as const).map(item=><button key={item} className={tab===item?'active':''} onClick={()=>setTab(item)} aria-current={tab===item?'page':undefined}>{item==='monitors'?'Overview':item==='incidents'?'Incidents':'Settings'}{item==='incidents'&&active.length>0&&<span className="nav-count">{active.length}</span>}</button>)}</nav>
     <main id="main-content">
-      <div className="page-heading"><div><h1>{tab==='monitors'?'Service overview':tab==='incidents'?'Incident history':'Settings'}</h1></div>{tab==='monitors'&&<button className="primary-button" disabled={busy||!workerAlive} onClick={()=>action({action:'check'})}><RefreshCw size={16} className={busy?'spinning':''}/>Run checks</button>}</div>
+      <div className="page-heading"><div><h1>{tab==='monitors'?'Service overview':tab==='incidents'?'Incident history':'Settings'}</h1></div>{tab==='monitors'&&<div className="overview-actions"><button className="small-button" disabled={busy||!workerAlive} onClick={()=>action({action:'check'})}><RefreshCw size={16} className={busy?'spinning':''}/>Run checks</button><button className="primary-button" disabled={busy} aria-expanded={adding} aria-controls="add-monitor" onClick={()=>setAdding(value=>!value)}><Plus size={16}/>Add monitor</button></div>}</div>
       {connectionError&&<div className="notice error" role="alert"><TriangleAlert size={18}/><span>Live refresh failed. These observations may be out of date.</span><button onClick={()=>void refresh()}>Retry</button></div>}
       {!workerAlive&&<div className="notice warning" role="status"><Clock3 size={18}/><span>The background checker is not running. Start it with <code>npm run worker</code> to collect new observations.</span></div>}
       {notice&&<div className={`notice ${notice.error?'error':'success'}`} role={notice.error?'alert':'status'}>{notice.error?<TriangleAlert size={18}/>:<Check size={18}/>}<span>{notice.text}</span><button className="icon-button" onClick={()=>setNotice(null)} aria-label="Dismiss message"><X size={16}/></button></div>}
       {tab==='monitors'&&<>
+        {adding&&<AddMonitor projects={[...new Set(data.monitors.map(m=>m.project))]} action={action} busy={busy} onClose={()=>setAdding(false)} onCreated={()=>{setAdding(false);setSearch('');setFilter('all');}}/>}
         <section className={`health-summary ${down?'has-outage':uncertain?'has-unknown':''}`} aria-label="Overall health"><div className="health-message">{down?<TriangleAlert size={29}/>:uncertain?<Clock3 size={29}/>:<CheckCircle2 size={29}/>}<div><h2>{headline}</h2>{needsSetup>0&&<p>{needsSetup} monitors need a target URL.</p>}</div></div><div className="health-totals"><span><b>{healthy}</b> Healthy</span><span><b>{down}</b> Down</span><span><b>{data.monitors.length}</b> Total</span></div></section>
         {needsSetup>0&&<div className="setup-note"><CircleHelp size={16}/><p>The imported status page hides its target URLs. <strong>{data.monitors.filter(m=>!m.url).map(m=>m.name).join(' and ')}</strong> {needsSetup===1?'needs its address':'need their addresses'}. Verify the starting URLs in each monitor’s editor.</p><button onClick={()=>setFilter(filter==='setup'?'all':'setup')}>{filter==='setup'?'Show all':'Finish setup'}<ArrowUpRight size={15}/></button></div>}
         <section className="monitor-section" aria-label="Monitors"><div className="table-toolbar"><div className="filter-buttons" aria-label="Filter monitors">{[['all','All monitors'],['up','Healthy'],['down','Down'],['setup','Needs setup']].map(([value,label])=><button key={value} className={filter===value?'selected':''} onClick={()=>setFilter(value)} aria-pressed={filter===value}>{label}{value==='all'&&<span>{data.monitors.length}</span>}</button>)}</div><label className="search-field"><Search size={16}/><input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Find a monitor…" aria-label="Find a monitor"/></label></div>

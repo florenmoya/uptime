@@ -90,6 +90,23 @@ test('real PostgreSQL atomically persists incidents and deduplicated outbox tran
     await pool.query(await readFile(new URL('../db/migrations/003-monitor-order.sql',import.meta.url),'utf8'));
     assert.deepEqual((await getDashboard()).monitors.map(m=>m.id),['schedule-fixture','fixture'],'reapplying migration preserves saved order');
     assert.deepEqual((await pool.query('SELECT id,status,failures,successes,version,next_check_at FROM monitors ORDER BY id')).rows,monitorStateBefore,'reordering does not change monitoring state');
+    const createInput={action:'monitors.create',name:' New service ',project:' Example ',url:' https://example.org#status '};
+    for(const invalid of [{name:''},{project:''},{url:''},{url:'http://127.0.0.1'},{url:'https://user:pass@example.org'},{url:'https://example.org:8080'}]){
+      await assert.rejects(control({...createInput,...invalid}));
+    }
+    const creates=await Promise.allSettled([control(createInput),control(createInput)]);
+    assert.equal(creates.filter(result=>result.status==='fulfilled').length,1,'concurrent submissions create one monitor');
+    const created=(await pool.query("SELECT *,next_check_at<=now() AS due FROM monitors WHERE url='https://example.org/'")).rows[0];
+    assert.equal(created.name,'New service');assert.equal(created.project,'Example');
+    assert.equal(created.enabled,true);assert.equal(created.status,'unknown');assert.equal(created.interval_seconds,60);assert.equal(created.due,true);
+    assert.equal(created.last_checked_at,null);
+    const withCreated=await getDashboard();
+    assert.deepEqual(withCreated.monitors.map(m=>m.id),['schedule-fixture','fixture',created.id],'new monitors append to saved order');
+    assert.ok(buildOverview(withCreated.monitors,withCreated.now,'').embeds[0].fields.at(-1)?.name.includes('New service'));
+    assert.deepEqual((await getPublicPage('fixture-status'))?.monitors.map(m=>m.id),['fixture'],'creation does not expose a monitor publicly');
+    assert.deepEqual((await pool.query('SELECT id,status,failures,successes,version,next_check_at FROM monitors WHERE id<>$1 ORDER BY id',[created.id])).rows,monitorStateBefore);
+    await assert.rejects(control({...createInput,url:'https://example.org/'}),/already/i);
+    await pool.query('DELETE FROM monitors WHERE id=$1',[created.id]);
     const replacementWebhook='https://discord.com/api/webhooks/456/replacement_fixture_secret';
     await assert.rejects(control({action:'notifications.save',channel:'discord',enabled:true,webhook:'https://example.com/webhook'}),/Discord webhook/);
     await control({action:'notifications.save',channel:'discord',enabled:true,webhook:replacementWebhook});
