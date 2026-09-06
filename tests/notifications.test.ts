@@ -13,7 +13,7 @@ test('overview renders honest stale states, history gaps and observed-check perc
   const monitor={name:'FACT PROD',url:'https://example.com',enabled:true,status:'up',failures:0,successes:2,interval_seconds:60,last_checked_at:now,last_latency_ms:80,total:200,passed:199,coverage:48,history:[{minute:now,ok:true}]} as MonitorView;
   const message=buildOverview([monitor],now,'https://uptime.example.com');
   assert.match(message.embeds[0].description,/All 1 services operational/);
-  assert.match(message.embeds[0].fields[0].value,/99.50% · 48% coverage/);
+  assert.match(message.embeds[0].fields[0].value,/24h checks: 99.50%/);
   assert.equal(overviewHistory(monitor,now),Array(5).fill('⬜').concat('🟩').join(' '));
   assert.equal(overviewHistory({...monitor,history:[{minute:'2026-09-05T15:01:00Z',ok:true},{minute:'2026-09-05T15:11:00Z',ok:false},{minute:now,ok:true}]},now),'🟩 🟥 ⬜ ⬜ ⬜ 🟩');
   assert.equal(overviewHistory({...monitor,history:[...monitor.history,{minute:'2026-09-05T15:55:00Z',ok:false}]},now),'⬜ ⬜ ⬜ ⬜ ⬜ 🟥');
