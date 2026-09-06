@@ -9,6 +9,21 @@ export class InputError extends Error{}
 function text(value:unknown,label:string,max:number) {if(typeof value!=='string'||!value.trim()||value.trim().length>max)throw new InputError(`${label} must contain 1–${max} characters.`);return value.trim();}
 
 export async function control(input:Record<string,unknown>):Promise<string> {
+  if(input.action==='monitors.reorder'){
+    if(!Array.isArray(input.monitorIds)||input.monitorIds.length<1||input.monitorIds.length>100||input.monitorIds.some(id=>typeof id!=='string'||!id.length||id.length>80))throw new InputError('Choose a valid monitor order.');
+    const ids=input.monitorIds as string[];
+    if(new Set(ids).size!==ids.length)throw new InputError('Include each monitor only once.');
+    await transaction(async client=>{
+      await client.query('SELECT id FROM app_settings WHERE id=true FOR UPDATE');
+      const current=await client.query('SELECT id FROM monitors ORDER BY id FOR UPDATE');
+      const existing=new Set(current.rows.map(m=>m.id));
+      if(existing.size!==ids.length||ids.some(id=>!existing.has(id)))throw new InputError('The monitor list changed. Cancel and try again.');
+      await client.query(`UPDATE monitors AS m SET display_order=selected.ordinality::integer-1
+        FROM unnest($1::text[]) WITH ORDINALITY AS selected(id,ordinality) WHERE m.id=selected.id`,[ids]);
+      await client.query('UPDATE overview_message SET next_attempt_at=now() WHERE id=true AND NOT creation_pending AND last_error IS NULL');
+    });
+    return 'Monitor order saved.';
+  }
   if(input.action==='overview.refresh'){
     const result=await pool.query("UPDATE overview_message SET next_attempt_at=now() WHERE id=true AND NOT creation_pending AND last_error IS NULL AND (last_updated_at IS NULL OR last_updated_at<now()-interval '15 seconds')");
     return result.rowCount?'Overview refresh queued.':'The overview was just updated or a retry is already scheduled.';

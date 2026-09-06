@@ -6,6 +6,7 @@ import PublicPages from './public-pages';
 import NotificationTests from './notification-tests';
 import NotificationConnections from './notification-connections';
 import OverviewSettings from './overview-settings';
+import MonitorOrder from './monitor-order';
 
 export function DeliveryHistory({data}:{data:DashboardData}){
   return <section className="section-block"><h2>Delivery history</h2><p className="section-description">Sent means the provider accepted the message.</p>
@@ -19,6 +20,7 @@ export default function SettingsPanel({data,action,busy}:{data:DashboardData;act
     <NotificationTests data={data} action={action} busy={busy}/>
   </section>
   <OverviewSettings data={data} action={action} busy={busy}/>
+  <MonitorOrder monitors={data.monitors} action={action} busy={busy}/>
   <PublicPages data={data} action={action} busy={busy}/>
   <DeliveryHistory data={data}/>
   <section className="section-block"><h2>Monitoring setup</h2><div className="setup-facts"><div><Clock3 size={19}/><span>Checks<strong>Every 60 seconds · 10-second timeout</strong></span></div><div><CheckCircle2 size={19}/><span>Confirmation<strong>Two failed checks down · two healthy checks recovered</strong></span></div></div></section>

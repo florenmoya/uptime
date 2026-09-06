@@ -16,7 +16,7 @@ export async function getDashboard():Promise<DashboardData> {
       (SELECT count(DISTINCT date_trunc('minute',c.checked_at))::int FROM checks c WHERE c.monitor_id=m.id AND c.target_url=m.url AND c.checked_at>now()-interval '24 hours') AS covered_minutes,
       COALESCE((SELECT jsonb_agg(h ORDER BY minute) FROM (SELECT date_trunc('minute',checked_at) AS minute,bool_and(ok) AS ok FROM checks c WHERE c.monitor_id=m.id AND c.target_url=m.url AND c.checked_at>now()-interval '1 hour' GROUP BY 1) h),'[]') AS history,
       COALESCE((SELECT jsonb_agg(r ORDER BY checked_at) FROM (SELECT checked_at,ok,latency_ms,http_status,error FROM checks c WHERE c.monitor_id=m.id AND c.target_url=m.url ORDER BY checked_at DESC LIMIT 30) r),'[]') AS recent
-      FROM monitors m ORDER BY m.created_at,m.id`),
+      FROM monitors m ORDER BY m.display_order,m.created_at,m.id`),
     pool.query('SELECT i.*,m.name FROM incidents i JOIN monitors m ON m.id=i.monitor_id ORDER BY i.started_at DESC LIMIT 60'),
     pool.query('SELECT id,channel,status,attempts,last_error,created_at,sent_at,jsonb_build_object(\'title\',payload->>\'title\',\'kind\',payload->>\'kind\') AS payload FROM deliveries ORDER BY created_at DESC LIMIT 40'),
     pool.query(`SELECT sp.id,sp.slug,sp.title,sp.description,sp.published,sp.updated_at,

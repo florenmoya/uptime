@@ -64,6 +64,10 @@ MAIL_TO=you@your-domain.com
 
 Use `SMTP_SECURE=true` for port 465. SMTP STARTTLS is required on non-local plain connections. Comma-separated recipients are supported. Dashboard edits take effect immediately. Restart the dashboard and worker only after changing environment variables. A successful SMTP result means the receiving mail server accepted the message, not that a person read it. Without sender/recipient/provider details, email remains visibly unconfigured. Saved connections use AES-256-GCM encryption in PostgreSQL. Set `NOTIFICATION_ENCRYPTION_KEY` to a random 32-byte hex key in the private environment file, use the same key for every app instance sharing the database, and back it up separately from the database. Never commit the key or regenerate it over existing encrypted settings. The tests verify real SMTP delivery to an isolated local capture server; no mail credentials are needed for that test.
 
+## Monitor order
+
+In **Settings → Monitor order**, move monitors up or down, then select **Save order**. The saved order applies to the private dashboard and Discord overview. Public status pages retain their separately selected order. New monitors appear last. Apply `db/migrations/003-monitor-order.sql` as the database owner before deploying this version to an existing installation.
+
 ## Discord overview
 
 **Settings → Discord overview** maintains one live Discord message with all services, current status, response time, observed 24-hour check results, and six ten-minute history blocks that fit narrow Discord message cards. It refreshes every 60 seconds through the existing worker. It is enabled by default and uses the incident webhook unless a separate encrypted webhook is saved. It is independent of the automatic incident alert switch.

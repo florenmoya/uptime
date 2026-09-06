@@ -78,6 +78,18 @@ test('real PostgreSQL atomically persists incidents and deduplicated outbox tran
     process.env.NOTIFICATION_ENCRYPTION_KEY='ab'.repeat(32);
     const {getNotificationSettings,notificationSettingsView,notificationReadiness}=await import('../src/lib/notification-settings.js');
     const {getDashboard}=await import('../src/lib/dashboard.js');
+    const monitorStateBefore=(await pool.query('SELECT id,status,failures,successes,version,next_check_at FROM monitors ORDER BY id')).rows;
+    await control({action:'monitors.reorder',monitorIds:['schedule-fixture','fixture']});
+    assert.deepEqual((await getDashboard()).monitors.map(m=>m.id),['schedule-fixture','fixture']);
+    const {buildOverview}=await import('../src/lib/overview-content.js');
+    const ordered=await getDashboard();
+    assert.ok(buildOverview(ordered.monitors,ordered.now,'').embeds[0].fields[0].name.includes('Schedule fixture'));
+    await assert.rejects(control({action:'monitors.reorder',monitorIds:['fixture','fixture']}),/once/i);
+    await assert.rejects(control({action:'monitors.reorder',monitorIds:['fixture']}),/changed/i);
+    await assert.rejects(control({action:'monitors.reorder',monitorIds:['fixture','missing']}),/changed/i);
+    await pool.query(await readFile(new URL('../db/migrations/003-monitor-order.sql',import.meta.url),'utf8'));
+    assert.deepEqual((await getDashboard()).monitors.map(m=>m.id),['schedule-fixture','fixture'],'reapplying migration preserves saved order');
+    assert.deepEqual((await pool.query('SELECT id,status,failures,successes,version,next_check_at FROM monitors ORDER BY id')).rows,monitorStateBefore,'reordering does not change monitoring state');
     const replacementWebhook='https://discord.com/api/webhooks/456/replacement_fixture_secret';
     await assert.rejects(control({action:'notifications.save',channel:'discord',enabled:true,webhook:'https://example.com/webhook'}),/Discord webhook/);
     await control({action:'notifications.save',channel:'discord',enabled:true,webhook:replacementWebhook});
