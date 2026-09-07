@@ -20,7 +20,7 @@ export default function MonitorOrder({monitors,action,busy}:{monitors:MonitorVie
   async function save(){if(await action({action:'monitors.reorder',monitorIds:ids})){setDraft(null);setAnnouncement('Monitor order saved.');}}
   return <section className="section-block" aria-labelledby="monitor-order-heading">
     <h2 id="monitor-order-heading">Monitor order</h2>
-    <p className="section-description">Dashboard and Discord overview.</p>
+    <p className="section-description">Dashboard, public status pages, and Discord overview.</p>
     <ol className="monitor-order-list" aria-label="Monitor order">
       {ids.map((id,index)=><li key={id}>
         <span className="monitor-order-position" aria-hidden="true">{index+1}</span>

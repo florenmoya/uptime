@@ -23,7 +23,7 @@ export async function getPublicPage(slug:string):Promise<PublicStatusPage|null>{
         GROUP BY day
       ) day_status),'[]') AS days
       FROM status_page_monitors spm JOIN monitors m ON m.id=spm.monitor_id
-      WHERE spm.status_page_id=$1 ORDER BY spm.display_order`,[page.id]),
+      WHERE spm.status_page_id=$1 ORDER BY m.display_order,m.created_at,m.id`,[page.id]),
     pool.query(`SELECT i.id::text,m.name,i.started_at,i.resolved_at
       FROM incidents i
       JOIN status_page_monitors spm ON spm.monitor_id=i.monitor_id

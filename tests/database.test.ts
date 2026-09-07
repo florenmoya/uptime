@@ -90,6 +90,12 @@ test('real PostgreSQL atomically persists incidents and deduplicated outbox tran
     await pool.query(await readFile(new URL('../db/migrations/003-monitor-order.sql',import.meta.url),'utf8'));
     assert.deepEqual((await getDashboard()).monitors.map(m=>m.id),['schedule-fixture','fixture'],'reapplying migration preserves saved order');
     assert.deepEqual((await pool.query('SELECT id,status,failures,successes,version,next_check_at FROM monitors ORDER BY id')).rows,monitorStateBefore,'reordering does not change monitoring state');
+    await control({action:'status-page.save',title:'Ordered status',slug:'ordered-status',published:true,monitorIds:['fixture','schedule-fixture']});
+    assert.deepEqual((await getPublicPage('ordered-status'))?.monitors.map(m=>m.id),['schedule-fixture','fixture'],'public pages follow monitor order instead of selection order');
+    await control({action:'monitors.reorder',monitorIds:['fixture','schedule-fixture']});
+    assert.deepEqual((await getPublicPage('ordered-status'))?.monitors.map(m=>m.id),['fixture','schedule-fixture'],'later ordering changes apply without resaving the public page');
+    assert.deepEqual((await getPublicPage('fixture-status'))?.monitors.map(m=>m.id),['fixture'],'only selected monitors remain public');
+    await control({action:'monitors.reorder',monitorIds:['schedule-fixture','fixture']});
     const createInput={action:'monitors.create',name:' New service ',project:' Example ',url:' https://example.org#status '};
     for(const invalid of [{name:''},{project:''},{url:''},{url:'http://127.0.0.1'},{url:'https://user:pass@example.org'},{url:'https://example.org:8080'}]){
       await assert.rejects(control({...createInput,...invalid}));
