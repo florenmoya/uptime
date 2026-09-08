@@ -14,8 +14,8 @@ export function DeliveryHistory({data}:{data:DashboardData}){
   </section>;
 }
 export default function SettingsPanel({data,action,busy}:{data:DashboardData;action:Action;busy:boolean}){
-  return <div className="settings-content"><section className="section-block"><h2>Notifications</h2><p className="section-description">Receive one alert when an outage is confirmed, and one when the site recovers.</p>
-    <div className="alert-switch"><div><Bell size={20}/><div><h3>Automatic incident alerts</h3><p>{data.config.alertsEnabled?'Enabled for future outage and recovery events.':'Paused. Test messages can still be sent.'}</p></div></div><button role="switch" aria-checked={data.config.alertsEnabled} aria-label="Automatic incident alerts" className={`switch ${data.config.alertsEnabled?'on':''}`} disabled={busy} onClick={()=>action({action:'alerts',enabled:!data.config.alertsEnabled})}><span/></button></div>
+  return <div className="settings-content"><section className="section-block"><h2>Incident notifications</h2><p className="section-description">Outage and recovery alerts.</p>
+    <div className="alert-switch"><div><Bell size={20}/><div><h3>All incident alerts</h3><p>{data.config.alertsEnabled?'Discord and email.':'Paused. Test messages can still be sent.'}</p></div></div><button role="switch" aria-checked={data.config.alertsEnabled} aria-label="All incident alerts" className={`switch ${data.config.alertsEnabled?'on':''}`} disabled={busy} onClick={()=>action({action:'alerts',enabled:!data.config.alertsEnabled})}><span/></button></div>
     <NotificationConnections settings={data.config.notifications} action={action} busy={busy}/>
     <NotificationTests data={data} action={action} busy={busy}/>
   </section>

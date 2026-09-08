@@ -65,12 +65,14 @@ export async function saveNotificationSettings(input:Record<string,unknown>){
     let next:DiscordSettings|EmailSettings;
     if(channel==='discord'||channel==='overview'){
       const replacement=field(input.webhook??'','Discord webhook URL',500,false);
-      const webhook=channel==='overview'&&input.useIncidentWebhook===true?'':replacement||current[channel].webhook;
+      const webhook=channel==='overview'
+        ?input.useIncidentWebhook===true?current.discord.webhook:replacement||current.overview.webhook||current.discord.webhook
+        :replacement||current.discord.webhook;
       if(webhook){
         let valid=false;try{const url=new URL(webhook);valid=url.origin==='https://discord.com'&&!url.username&&!url.password&&!url.search&&!url.hash&&/^\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/.test(url.pathname);}catch{}
         if(!valid)throw new NotificationSettingsError('Enter a valid Discord webhook URL.');
       }
-      if(enabled&&!webhook&&channel==='discord')throw new NotificationSettingsError('Enter a Discord webhook URL.');
+      if(enabled&&!webhook)throw new NotificationSettingsError('Enter a Discord webhook URL.');
       next={enabled,webhook};
     }else{
       const host=field(input.host,'SMTP host',253,enabled);
@@ -88,6 +90,11 @@ export async function saveNotificationSettings(input:Record<string,unknown>){
       if(to.length>20||to.some(address=>!mailbox(address)))throw new NotificationSettingsError('Enter up to 20 email addresses, separated by commas.');
       if(user&&!password&&enabled)throw new NotificationSettingsError('Enter the SMTP password.');
       next={enabled,host,port,secure:port===465,user,password,from,to:[...new Set(to)]};
+    }
+    // Preserve legacy overview destinations before changing incident settings.
+    if(channel==='discord'&&!current.overview.webhook&&current.discord.webhook){
+      await client.query(`INSERT INTO notification_settings(channel,encrypted_config) VALUES('overview',$1)
+        ON CONFLICT(channel) DO UPDATE SET encrypted_config=EXCLUDED.encrypted_config,updated_at=now()`,[encrypt('overview',{...current.overview,webhook:current.discord.webhook})]);
     }
     await client.query(`INSERT INTO notification_settings(channel,encrypted_config) VALUES($1,$2)
       ON CONFLICT(channel) DO UPDATE SET encrypted_config=EXCLUDED.encrypted_config,updated_at=now()`,[channel,encrypt(channel,next)]);
