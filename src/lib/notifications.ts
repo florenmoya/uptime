@@ -65,8 +65,15 @@ export async function dispatchPending():Promise<number> {
   const config=await getNotificationSettings(),ready=notificationReadiness(config);
   await Promise.all(due.rows.map(async delivery=>{
     try {
+      // Re-read immediately before sending: selection may have changed since this batch loaded.
+      const current=(await pool.query(`SELECT d.status,m.email_alerts_enabled FROM deliveries d
+        LEFT JOIN incidents i ON i.id=d.incident_id LEFT JOIN monitors m ON m.id=i.monitor_id WHERE d.id=$1`,[delivery.id])).rows[0];
+      if(!current||current.status!=='pending')return;
+      if(delivery.channel==='email'&&delivery.payload.kind!=='test'&&!delivery.payload.isTest&&current.email_alerts_enabled!==true){
+        await pool.query("UPDATE deliveries SET status='canceled',last_error='Email alerts disabled for this monitor' WHERE id=$1 AND status='pending'",[delivery.id]);return;
+      }
       if(!ready[delivery.channel as 'discord'|'email']){
-        await pool.query("UPDATE deliveries SET status='canceled',last_error='Notification channel disabled' WHERE id=$1",[delivery.id]);return;
+        await pool.query("UPDATE deliveries SET status='canceled',last_error='Notification channel disabled' WHERE id=$1 AND status='pending'",[delivery.id]);return;
       }
       const providerId=delivery.channel==='discord'?await sendDiscord(delivery.payload,config.discord.webhook):await sendEmail(delivery.payload,config.email);
       await pool.query("UPDATE deliveries SET status='sent',attempts=attempts+1,sent_at=now(),provider_id=$2,last_error=NULL WHERE id=$1",[delivery.id,providerId]);
@@ -74,7 +81,7 @@ export async function dispatchPending():Promise<number> {
       const failure=error instanceof DeliveryError?error:new DeliveryError('Delivery failed; see provider configuration.');
       const attempts=Number(delivery.attempts)+1;
       const delay=Math.max(failure.retryAfterMs,Math.min(900000,5000*2**(attempts-1)));
-      await pool.query("UPDATE deliveries SET status=$2,attempts=$3,last_error=$4,next_attempt_at=now()+($5::integer*interval '1 millisecond') WHERE id=$1",[delivery.id,failure.permanent||attempts>=8?'failed':'pending',attempts,failure.message,Math.min(delay,2147483647)]);
+      await pool.query("UPDATE deliveries SET status=$2,attempts=$3,last_error=$4,next_attempt_at=now()+($5::integer*interval '1 millisecond') WHERE id=$1 AND status='pending'",[delivery.id,failure.permanent||attempts>=8?'failed':'pending',attempts,failure.message,Math.min(delay,2147483647)]);
     }
   }));
   return due.rowCount??0;

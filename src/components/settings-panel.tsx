@@ -17,6 +17,18 @@ export default function SettingsPanel({data,action,busy}:{data:DashboardData;act
   return <div className="settings-content"><section className="section-block"><h2>Incident notifications</h2><p className="section-description">Outage and recovery alerts.</p>
     <div className="alert-switch"><div><Bell size={20}/><div><h3>All incident alerts</h3><p>{data.config.alertsEnabled?'Discord and email.':'Paused. Test messages can still be sent.'}</p></div></div><button role="switch" aria-checked={data.config.alertsEnabled} aria-label="All incident alerts" className={`switch ${data.config.alertsEnabled?'on':''}`} disabled={busy} onClick={()=>action({action:'alerts',enabled:!data.config.alertsEnabled})}><span/></button></div>
     <NotificationConnections settings={data.config.notifications} action={action} busy={busy}/>
+    <section className="monitor-email-settings" aria-labelledby="monitor-email-heading">
+      <h3 id="monitor-email-heading">Email alerts by monitor</h3>
+      <p className="section-description">Choose which services send outage and recovery emails.</p>
+      {!data.config.alertsEnabled?<p className="notification-test-note">All incident alerts are paused. Your email selections are saved.</p>:!data.config.email?<p className="notification-test-note">Enable and configure Email above to receive alerts for your selected monitors.</p>:null}
+      {data.monitors.length?<ul className="monitor-email-list">
+        {data.monitors.map(m=><li key={m.id}>
+          <span className="monitor-email-name">{m.name}</span>
+          <span className="monitor-email-state" aria-hidden="true">{m.email_alerts_enabled?'On':'Off'}</span>
+          <button type="button" role="switch" aria-checked={m.email_alerts_enabled} aria-label={`Email alerts for ${m.name}`} className={`switch ${m.email_alerts_enabled?'on':''}`} disabled={busy} onClick={()=>void action({action:'monitors.email-alerts',id:m.id,enabled:!m.email_alerts_enabled})}><span/></button>
+        </li>)}
+      </ul>:<p className="section-description">Add a monitor to choose its email alerts.</p>}
+    </section>
     <NotificationTests data={data} action={action} busy={busy}/>
   </section>
   <OverviewSettings data={data} action={action} busy={busy}/>

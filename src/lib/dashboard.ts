@@ -2,7 +2,7 @@ import { pool } from './db';
 import { settings } from './config';
 import {getNotificationSettings,notificationReadiness,notificationSettingsView,type NotificationSettingsView} from './notification-settings';
 
-export type MonitorView={id:string;name:string;project:string;url:string|null;enabled:boolean;status:string;failures:number;successes:number;interval_seconds:number;last_checked_at:string|null;last_http_status:number|null;last_latency_ms:number|null;last_error:string|null;created_at:string;total:number;passed:number;coverage:number;history:{minute:string;ok:boolean}[];recent:{checked_at:string;ok:boolean;latency_ms:number;http_status:number|null;error:string|null}[]};
+export type MonitorView={id:string;name:string;project:string;url:string|null;enabled:boolean;email_alerts_enabled:boolean;status:string;failures:number;successes:number;interval_seconds:number;last_checked_at:string|null;last_http_status:number|null;last_latency_ms:number|null;last_error:string|null;created_at:string;total:number;passed:number;coverage:number;history:{minute:string;ok:boolean}[];recent:{checked_at:string;ok:boolean;latency_ms:number;http_status:number|null;error:string|null}[]};
 export type IncidentView={id:string;monitor_id:string;name:string;started_at:string;resolved_at:string|null;reason:string;resolution:string|null};
 export type DeliveryView={id:string;channel:'discord'|'email';status:string;attempts:number;last_error:string|null;created_at:string;sent_at:string|null;payload:{title:string;kind:string}};
 export type StatusPageView={id:string;slug:string;title:string;description:string;published:boolean;monitorIds:string[];updatedAt:string};

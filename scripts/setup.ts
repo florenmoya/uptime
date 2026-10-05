@@ -24,7 +24,7 @@ try {
     ['philgeps','philgeps.gov.ph','PhilGEPS','https://philgeps.gov.ph/'],
     ['training','training.philgeps.gov.ph','PhilGEPS','https://training.philgeps.gov.ph/'],
   ];
-  for (const seed of seeds) await db.query('INSERT INTO monitors(id,name,project,url) VALUES($1,$2,$3,$4) ON CONFLICT(id) DO NOTHING',seed);
+  for (const seed of seeds) await db.query('INSERT INTO monitors(id,name,project,url,email_alerts_enabled) VALUES($1,$2,$3,$4,$5) ON CONFLICT(id) DO NOTHING',[...seed,['philgeps','emarket','emarket-api','fact-prod'].includes(seed[0])]);
   await db.query('COMMIT');
   console.log('Dedicated database ready; six monitor seeds present. Existing settings preserved.');
 }catch(error){await db.query('ROLLBACK');throw error;}finally{await db.end();}

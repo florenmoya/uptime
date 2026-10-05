@@ -35,7 +35,7 @@ export async function recordObservation(id:string,scheduledAt:Date,version:numbe
     if(enabled.rows[0]?.alerts_enabled) {
       const activeChannels=channels??notificationReadiness(await getNotificationSettings(client));
       const payload=buildIncidentNotification({monitor,kind:event,occurredAt,startedAt,incidentId:String(incidentId),result,dashboardUrl:settings().appUrl});
-      for(const channel of ['discord','email'] as const) if(activeChannels[channel]) await client.query('INSERT INTO deliveries(incident_id,event_key,channel,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[incidentId,`${incidentId}:${event}`,channel,JSON.stringify(payload)]);
+      for(const channel of ['discord','email'] as const) if(activeChannels[channel]&&(channel!=='email'||monitor.email_alerts_enabled)) await client.query('INSERT INTO deliveries(incident_id,event_key,channel,payload) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING',[incidentId,`${incidentId}:${event}`,channel,JSON.stringify(payload)]);
     }
     return true;
   });

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS monitors (
   display_order integer NOT NULL DEFAULT 2147483647 CHECK (display_order >= 0),
   url text,
   enabled boolean NOT NULL DEFAULT true,
+  email_alerts_enabled boolean NOT NULL DEFAULT false,
   interval_seconds integer NOT NULL DEFAULT 60 CHECK (interval_seconds >= 60),
   status text NOT NULL DEFAULT 'unknown' CHECK (status IN ('unknown','up','down')),
   failures integer NOT NULL DEFAULT 0,

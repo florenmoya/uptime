@@ -38,6 +38,19 @@ export async function control(input:Record<string,unknown>):Promise<string> {
     });
     return 'Monitor order saved.';
   }
+  if(input.action==='monitors.email-alerts'){
+    const id=text(input.id,'Monitor',80);
+    if(typeof input.enabled!=='boolean')throw new InputError('Choose whether email alerts are enabled.');
+    await transaction(async client=>{
+      // Match the observation lock so disabling also cancels concurrently queued emails.
+      const result=await client.query('UPDATE monitors SET email_alerts_enabled=$2 WHERE id=$1 RETURNING id',[id,input.enabled]);
+      if(!result.rowCount)throw new InputError('Monitor not found.');
+      if(!input.enabled)await client.query(`UPDATE deliveries SET status='canceled',last_error='Email alerts disabled for this monitor'
+        WHERE channel='email' AND status='pending' AND incident_id IN(SELECT id FROM incidents WHERE monitor_id=$1)
+        AND payload->>'kind' IS DISTINCT FROM 'test' AND payload->>'isTest' IS DISTINCT FROM 'true'`,[id]);
+    });
+    return input.enabled?'Email alerts enabled for future incident changes.':'Email alerts disabled for this monitor.';
+  }
   if(input.action==='overview.refresh'){
     const result=await pool.query("UPDATE overview_message SET next_attempt_at=now() WHERE id=true AND NOT creation_pending AND last_error IS NULL AND (last_updated_at IS NULL OR last_updated_at<now()-interval '15 seconds')");
     return result.rowCount?'Overview refresh queued.':'The overview was just updated or a retry is already scheduled.';
